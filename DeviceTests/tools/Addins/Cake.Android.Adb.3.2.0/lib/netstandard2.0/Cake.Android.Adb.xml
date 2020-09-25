@@ -1,0 +1,1041 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Cake.Android.Adb</name>
+    </assembly>
+    <members>
+        <member name="T:Cake.AndroidAdb.PackageListState">
+            <summary>
+            Enabled/Disabled state of packages.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.PackageListState.All">
+            <summary>
+            All - Enabled and Disabled.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.PackageListState.OnlyEnabled">
+            <summary>
+            Only enabled.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.PackageListState.OnlyDisabled">
+            <summary>
+            Only Disabled.
+            </summary>
+        </member>
+        <member name="T:Cake.AndroidAdb.PackageSourceType">
+            <summary>
+            Source type of packages
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.PackageSourceType.All">
+            <summary>
+            All - System and Third Party.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.PackageSourceType.OnlySystem">
+            <summary>
+            Only System.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.PackageSourceType.OnlyThirdParty">
+            <summary>
+            Only Third Party.
+            </summary>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbInstallLocation">
+            <summary>
+            Install Location of packages.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbInstallLocation.Auto">
+            <summary>
+            Auto - Let the system automatically decide.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbInstallLocation.Internal">
+            <summary>
+            Internal - System Memory.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbInstallLocation.External">
+            <summary>
+            External - Mass Storage Device.
+            </summary>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbToolSettings">
+            <summary>
+            Tool Settings for Android ADB Aliases
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbToolSettings.SdkRoot">
+            <summary>
+            Gets or sets the Android SDK HOME root path to invoke tools from.
+            </summary>
+            <value>The sdk root.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbToolSettings.Serial">
+            <summary>
+            Gets or sets the serial of a specific device or emulator to target commands with.  This must be specified if multiple devices are seen by ADB, and only works on commands that are specific to a device.
+            </summary>
+            <value>The serial.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.ActivityManagerAliases">
+            <summary>
+            Cake build aliases for Android ADB Activity Manager commands
+            </summary>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmStartActivity(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AmStartOptions,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Starts an Activity on the target.
+            </summary>
+            <returns><c>true</c>, if an activity was started, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="adbIntentArguments">Intent to start the activity with, as per the Intent Spec: https://developer.android.com/studio/command-line/adb.html#IntentSpec.</param>
+            <param name="options">Options.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmStartService(Cake.Core.ICakeContext,System.String,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Starts a Service on the target.
+            </summary>
+            <returns><c>true</c>, if service was started, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="adbIntentArguments">Intent to start the service with, as per the Intent Spec: https://developer.android.com/studio/command-line/adb.html#IntentSpec.</param>
+            <param name="runAsUser">Run as user.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmForceStop(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Force stops an application on the target.
+            </summary>
+            <returns>The force stop.</returns>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmKill(Cake.Core.ICakeContext,System.String,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Kills a service on the target.
+            </summary>
+            <returns>The kill.</returns>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="forUser">For user.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmKillAll(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Kills all services on the target.
+            </summary>
+            <returns>The kill all.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmBroadcast(Cake.Core.ICakeContext,System.String,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Broadcasts an Intent on the target.
+            </summary>
+            <returns>The broadcast.</returns>
+            <param name="context">Context.</param>
+            <param name="intent">Intent spec to broadcast, as per the Intent Spec: https://developer.android.com/studio/command-line/adb.html#IntentSpec.</param>
+            <param name="toUser">To user.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmInstrument(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AmInstrumentOptions,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Ams the instrument.
+            </summary>
+            <returns>The instrument.</returns>
+            <param name="context">Context.</param>
+            <param name="component">Component.</param>
+            <param name="options">Options.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmStartProfiling(Cake.Core.ICakeContext,System.String,Cake.Core.IO.FilePath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Starts profiling on the target.
+            </summary>
+            <returns>The start profiling.</returns>
+            <param name="context">Context.</param>
+            <param name="process">Process to profile.</param>
+            <param name="outputFile">Output file to save profile data to.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmStopProfiling(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Stops profiling on the target.
+            </summary>
+            <returns>The stop profiling.</returns>
+            <param name="context">Context.</param>
+            <param name="process">Process to stop profiling.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmDumpHeap(Cake.Core.ICakeContext,System.String,Cake.Core.IO.FilePath,System.String,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Dumps the heap from a process on the target.
+            </summary>
+            <returns>The dump heap.</returns>
+            <param name="context">Context.</param>
+            <param name="process">Process to dump heap for.</param>
+            <param name="outputFile">Output file to save heap dump to.</param>
+            <param name="forUser">Restrict heap dump to a user.</param>
+            <param name="dumpNativeHeap">If set to <c>true</c> dump native heap instead.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmSetDebugApp(Cake.Core.ICakeContext,System.String,System.Boolean,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Set the debug app on the target.
+            </summary>
+            <returns>The set debug app.</returns>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="wait">If set to <c>true</c> wait until operation is complete.</param>
+            <param name="persistent">If set to <c>true</c> persist this setting..</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmClearDebugApp(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Clears the set debug app on the target.
+            </summary>
+            <returns>The clear debug app.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmMonitor(Cake.Core.ICakeContext,System.Nullable{System.Int32},Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Starts monitoring for crashes or ANRs on the target.
+            </summary>
+            <returns>The monitor.</returns>
+            <param name="context">Context.</param>
+            <param name="gdbPort">Gdb port to start gdbserv on when crash/ANR occurs.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmScreenCompat(Cake.Core.ICakeContext,System.Boolean,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Turn screen compatibility mode on/off for the given package on the target.
+            </summary>
+            <returns>The screen compat.</returns>
+            <param name="context">Context.</param>
+            <param name="compatOn">If set to <c>true</c> compatibility will be turned on.</param>
+            <param name="packageName">Package name.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmDisplaySize(Cake.Core.ICakeContext,System.Int32,System.Int32,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Override the target's display size. This command is helpful for testing your app across different screen sizes by mimicking a small screen resolution using a device with a large screen, and vice versa.
+            </summary>
+            <returns>The display size.</returns>
+            <param name="context">Context.</param>
+            <param name="width">Width.</param>
+            <param name="height">Height.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmResetDisplaySize(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Resets the target's display size.
+            </summary>
+            <returns>The reset display size.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmDisplayDensity(Cake.Core.ICakeContext,System.Int32,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Override the target's display density. This command is helpful for testing your app across different screen densities on high-density screen environment using a low density screen, and vice versa.
+            </summary>
+            <returns>The display density.</returns>
+            <param name="context">Context.</param>
+            <param name="dpi">Density in dpi.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmIntentToURI(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Convert the given intent specification to a URI.
+            </summary>
+            <returns>The intent URI.</returns>
+            <param name="context">Context.</param>
+            <param name="intent">Intent spec to broadcast, as per the Intent Spec: https://developer.android.com/studio/command-line/adb.html#IntentSpec.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.ActivityManagerAliases.AmIntentToIntentURI(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Convert the given intent specification to an Intent URI.
+            </summary>
+            <returns>The intent URI.</returns>
+            <param name="context">Context.</param>
+            <param name="intent">Intent spec to broadcast, as per the Intent Spec: https://developer.android.com/studio/command-line/adb.html#IntentSpec.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbAliases">
+            <summary>
+            Cake build aliases for Android ADB commands
+            </summary>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbDevices(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets a list of all attached emulator/device instances.
+            </summary>
+            <returns>List of Devices.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbVersion(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets the adb version number.
+            </summary>
+            <returns>Version.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbKillServer(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Terminates the adb server process.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbStartServer(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Checks whether the adb server process is running and starts it, if not.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbConnect(Cake.Core.ICakeContext,System.String,System.Int32,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Connects to a device or emulator by IP address.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="deviceIp">Target IP address.</param>
+            <param name="port">Target port.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbDisconnect(Cake.Core.ICakeContext,System.String,System.Int32,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Disconnects from a device or emulator.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="deviceIp">Target IP address.</param>
+            <param name="port">Port.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbInstall(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Installs an Android .APK file.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="apkFile">Local .APK file to install.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbUninstall(Cake.Core.ICakeContext,System.String,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Uninstalls an application from the target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name to uninstall.</param>
+            <param name="keepDataAndCacheDirs">If set to <c>true</c> keep data and cache directories.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbPull(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Core.IO.FilePath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Pulls a file from the target to a local destination.
+            </summary>
+            <returns><c>true</c>, if pull succeeded, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="remoteFileSource">Remote file to pull.</param>
+            <param name="localFileDestination">Local file destination.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbPull(Cake.Core.ICakeContext,Cake.Core.IO.DirectoryPath,Cake.Core.IO.DirectoryPath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Pulls a directory from the target to a local destination.
+            </summary>
+            <returns><c>true</c>, if pull succeeded, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="remoteDirectorySource">Remote directory to pull.</param>
+            <param name="localDirectoryDestination">Local destination.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbPull(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Core.IO.DirectoryPath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Pulls a file from the target to a local destination.
+            </summary>
+            <returns><c>true</c>, if pull succeeded, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="remoteFileSource">Remote file to pull.</param>
+            <param name="localDirectoryDestination">Local destination.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbPush(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Core.IO.FilePath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Pushes a local file to the remote destination on the target.
+            </summary>
+            <returns><c>true</c>, if push succeeded, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="localFileSource">Local file source.</param>
+            <param name="remoteFileDestination">Remote file destination.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbPush(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.Core.IO.DirectoryPath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Pushes a local file to the remote destination on the target.
+            </summary>
+            <returns><c>true</c>, if push succeeded, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="localFileSource">Local file source.</param>
+            <param name="remoteDirectoryDestination">Remote destination.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbPush(Cake.Core.ICakeContext,Cake.Core.IO.DirectoryPath,Cake.Core.IO.DirectoryPath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Pushes a local directory to the remote destination on the target.
+            </summary>
+            <returns><c>true</c>, if push succeeded, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="localDirectorySource">Local file source.</param>
+            <param name="remoteDirectoryDestination">Remote file destination.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbBugReport(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Dumps out a bug report.
+            </summary>
+            <returns>The bug report.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbLogcat(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbLogcatOptions,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Dumps out Logcat output.
+            </summary>
+            <returns>The logcat.</returns>
+            <param name="context">Context.</param>
+            <param name="options">Options.</param>
+            <param name="filter">Filter.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbGetSerialNumber(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets the target's serial.
+            </summary>
+            <returns>The serial number.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbGetState(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets the target's state.
+            </summary>
+            <returns>The state.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbShell(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Executes a shell command on the target.
+            </summary>
+            <returns>The shell command output.</returns>
+            <param name="context">Context.</param>
+            <param name="shellCommand">Shell command to execute.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbScreenCapture(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Captures a screenshot from the target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="saveToLocalFile">Save to local file.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbScreenRecord(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Nullable{System.Threading.CancellationToken},System.Nullable{System.TimeSpan},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Boolean,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Records the screen of the target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="saveToLocalFile">Save to local file.</param>
+            <param name="recordingCancelToken">Recording cancel token.  If specified, the cancel token must be cancelled to stop the recording.</param>
+            <param name="timeLimit">Time limit.  If specified, recording will stop after the specified time.</param>
+            <param name="bitrateMbps">Bitrate quality in megabits per second.  Default is 4mbps.</param>
+            <param name="width">Recording width.</param>
+            <param name="height">Recording height.</param>
+            <param name="rotate">If set to <c>true</c> rotate the recording 90 degrees.</param>
+            <param name="logVerbose">If set to <c>true</c> show verbose log output.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbGetAvdName(Cake.Core.ICakeContext,System.String)">
+            <summary>
+            Connects to an emulator and queries its avd name
+            </summary>
+            <returns>AVD name of the emulator.</returns>
+            <param name="context">Context.</param>
+            <param name="emulatorSerial">Emulator serial to get AVD name of.  Must be in the format 'emulator-5554'.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbWaitForEmulatorToBoot(Cake.Core.ICakeContext,System.TimeSpan,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Waits for an emulator to boot (dev.bootcomplete=1)
+            </summary>
+            <returns><c>true</c>, if emulator booted, <c>false</c> otherwise.</returns>
+            <param name="context">Context.</param>
+            <param name="timeout">Timeout.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbWaitFor(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbTransport,Cake.AndroidAdb.AdbState,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Waits for a given transport and state
+            </summary>
+            <param name="context">Context.</param>
+            <param name="transport">Transport.</param>
+            <param name="state">State.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbRun(Cake.Core.ICakeContext,System.String[],Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Runs adb with an arbitrary list of arguments
+            </summary>
+            <param name="context">Context.</param>
+            <param name="args">Arguments to pass adb.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.AdbAliases.AdbEmuKill(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Kills an emulator by serial
+            </summary>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="T:Cake.AndroidAdb.PackageManagerAliases">
+            <summary>
+            Cake build aliases for Android ADB Package Manager commands
+            </summary>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmListPackages(Cake.Core.ICakeContext,System.Boolean,Cake.AndroidAdb.PackageListState,Cake.AndroidAdb.PackageSourceType,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets a list of packages from the target.
+            </summary>
+            <returns>The list of packages.</returns>
+            <param name="context">Context.</param>
+            <param name="includeUninstalled">If set to <c>true</c> include uninstalled packages.</param>
+            <param name="showState">Show All by default, or choose to show only enabled or disabled packages.</param>
+            <param name="showSource">Show All by default, or choose to show only System or 3rd party packages.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmListPermissionGroups(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets a list of Permission Groups on the target.
+            </summary>
+            <returns>The list of permission groups.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmListPermissions(Cake.Core.ICakeContext,System.Boolean,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets a list of Permissions, grouped by Permission Group on the target
+            </summary>
+            <returns>The list of Permissions grouped by Permission Group.</returns>
+            <param name="context">Context.</param>
+            <param name="onlyDangerous">If set to <c>true</c> return only permissions marked dangerous.</param>
+            <param name="onlyUserVisible">If set to <c>true</c> return only permissions visible to the user.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmListFeatures(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets a list of features implemented on the target.
+            </summary>
+            <returns>The list of features.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmListLibraries(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets a list of libraries that exist on the target.
+            </summary>
+            <returns>The list of libraries.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmPathToPackage(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets the path for a given package name.
+            </summary>
+            <returns>The path to package.</returns>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmInstall(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Boolean,System.Boolean,System.Boolean,System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Installs an APK file from the given path on the target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="pathOnDevice">Path of the APK to install on the target.</param>
+            <param name="forwardLock">If set to <c>true</c> install the package with a forward lock.</param>
+            <param name="reinstall">If set to <c>true</c> reinstall the package, keeping its data.</param>
+            <param name="allowTestApks">If set to <c>true</c> allow test APKs to be installed.</param>
+            <param name="installerPackageName">Installer package name.</param>
+            <param name="installOnSharedStorage">If set to <c>true</c> install on shared storage.</param>
+            <param name="installOnInternalSystemMemory">If set to <c>true</c> install on internal system memory.</param>
+            <param name="allowVersionDowngrade">If set to <c>true</c> allow version downgrade.</param>
+            <param name="grantAllManifestPermissions">If set to <c>true</c> grant all manifest permissions.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmUninstall(Cake.Core.ICakeContext,System.String,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Uninstalls a package from the target
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="keepDataAndCache">If set to <c>true</c> keep data and cache.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmClear(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Clears all data associated with the package.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmEnable(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Enables the given package or component
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageOrComponent">Package or component (written as "package/class").</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmDisable(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Disables the given package or component
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageOrComponent">Package or component (written as "package/class").</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmDisableUser(Cake.Core.ICakeContext,System.String,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Disables a user for the given package or component.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageOrComponent">Package or component (written as "package/class").</param>
+            <param name="forUser">For user.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmGrant(Cake.Core.ICakeContext,System.String,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Grants a permission to a package.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="permission">Permission.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmRevoke(Cake.Core.ICakeContext,System.String,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Revokes a permission from a package.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="packageName">Package name.</param>
+            <param name="permission">Permission.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmSetInstallLocation(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbInstallLocation,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Sets the default install location for the target.  Note: This is only intended for debugging; using this can cause applications to break and other undesireable behavior.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="location">Location.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmGetInstallLocation(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets the current default install location for the target.
+            </summary>
+            <returns>The get install location.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmSetPermissionEnforced(Cake.Core.ICakeContext,System.String,System.Boolean,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Sets whether or not a permission is enforced on the target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="permission">Permission.</param>
+            <param name="enforced">If set to <c>true</c> enforced.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmTrimCaches(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Tries to free up space on the target by deleting caches.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="desiredFreeSpace">Desired free space to trim.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmCreateUser(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Creates a new user on the target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="userName">User name.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmRemoveUser(Cake.Core.ICakeContext,System.String,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Removes a user from a target.
+            </summary>
+            <param name="context">Context.</param>
+            <param name="userId">User identifier.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="M:Cake.AndroidAdb.PackageManagerAliases.PmGetMaxUsers(Cake.Core.ICakeContext,Cake.AndroidAdb.AdbToolSettings)">
+            <summary>
+            Gets the max # of users the target supports.
+            </summary>
+            <returns>The get max users.</returns>
+            <param name="context">Context.</param>
+            <param name="settings">Settings.</param>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbDeviceInfo">
+            <summary>
+            Android Device
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbDeviceInfo.Serial">
+            <summary>
+            Gets or sets the serial.
+            </summary>
+            <value>The serial.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbDeviceInfo.Usb">
+            <summary>
+            Gets or sets the usb.
+            </summary>
+            <value>The usb.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbDeviceInfo.Product">
+            <summary>
+            Gets or sets the product.
+            </summary>
+            <value>The product.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbDeviceInfo.Model">
+            <summary>
+            Gets or sets the model.
+            </summary>
+            <value>The model.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbDeviceInfo.Device">
+            <summary>
+            Gets or sets the device.
+            </summary>
+            <value>The device.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbLogcatOptions">
+            <summary>
+            Logcat Options
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.BufferType">
+            <summary>
+            Gets or sets an alternate log buffer for viewing, such as events or radio.The main buffer is used by default. See Viewing Alternative Log Buffers.
+            </summary>
+            <value>The type of the buffer.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.Clear">
+            <summary>
+            Gets or sets a value indicating whether to clears (flush) the entire log and exit.
+            </summary>
+            <value><c>true</c> if clear; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.OutputFile">
+            <summary>
+            Gets or sets the file to write log message output to.  The default is stdout.
+            </summary>
+            <value>The output file.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.PrintSize">
+            <summary>
+            Gets or sets a value indicating whether to Print the size of the specified log buffer and exit.
+            </summary>
+            <value><c>true</c> if print size; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.NumRotatedLogs">
+            <summary>
+            Gets or sets the maximum number of rotated logs to.  The default value is 4.  Requires specifying the LogRotationKb option.
+            </summary>
+            <value>The number rotated logs.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.LogRotationKb">
+            <summary>
+            Gets or sets the log rotation size.  The default value is 16.  Requires the OutputFile to be specified.
+            </summary>
+            <value>The log rotation kb.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.SilentFilter">
+            <summary>
+            Gets or sets a value indicating whether the default filter spec is silent.
+            </summary>
+            <value><c>true</c> if silent filter; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbLogcatOptions.Verbosity">
+            <summary>
+            Gets or sets the verbosity.  The default is brief format. For a list of supported formats, see Controlling Log Output Format.
+            </summary>
+            <value>The verbosity.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbLogcatBufferType">
+            <summary>
+            Which Logcat buffer to return.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatBufferType.Main">
+            <summary>
+            Main - Main buffer.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatBufferType.Radio">
+            <summary>
+            Radio - View the buffer that contains radio/telephony related messages.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatBufferType.Events">
+            <summary>
+            Events - View the buffer containing events-related messages.
+            </summary>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbLogcatOutputVerbosity">
+            <summary>
+            Verbosity of Logcat output to return.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.Brief">
+            <summary>
+            Brief - Display priority/tag and PID of the process issuing the message (the default format).
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.Process">
+            <summary>
+            Process - Display PID only.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.Tag">
+            <summary>
+            Tag - Display the priority/tag only.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.Raw">
+            <summary>
+            Raw - Display the raw log message, with no other metadata fields.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.Time">
+            <summary>
+            Time - Display the date, invocation time, priority/tag, and PID of the process issuing the message.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.ThreadTime">
+            <summary>
+            ThreadTime - Display the date, invocation time, priority, tag, and the PID and TID of the thread issuing the message.
+            </summary>
+        </member>
+        <member name="F:Cake.AndroidAdb.AdbLogcatOutputVerbosity.Long">
+            <summary>
+            Long - Display all metadata fields and separate messages with blank lines.
+            </summary>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbPackageListInfo">
+            <summary>
+            Android Package Information
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPackageListInfo.InstallPath">
+            <summary>
+            Gets or sets the install path.
+            </summary>
+            <value>The install path.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPackageListInfo.Installer">
+            <summary>
+            Gets or sets the installer.
+            </summary>
+            <value>The installer.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPackageListInfo.PackageName">
+            <summary>
+            Gets or sets the name of the package.
+            </summary>
+            <value>The name of the package.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbPermissionGroupInfo">
+            <summary>
+            Android Permission Group
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionGroupInfo.Group">
+            <summary>
+            Gets or sets the permission group name
+            </summary>
+            <value>The permission group name.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionGroupInfo.PackageName">
+            <summary>
+            Gets or sets the name of the package.
+            </summary>
+            <value>The name of the package.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionGroupInfo.Label">
+            <summary>
+            Gets or sets the label.
+            </summary>
+            <value>The label.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionGroupInfo.Description">
+            <summary>
+            Gets or sets the description.
+            </summary>
+            <value>The description.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionGroupInfo.Permissions">
+            <summary>
+            Gets or sets the permissions in the group
+            </summary>
+            <value>The permissions.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.AdbPermissionInfo">
+            <summary>
+            Android Permission
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionInfo.Permission">
+            <summary>
+            Gets or sets the permission name.
+            </summary>
+            <value>The permission name.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionInfo.PackageName">
+            <summary>
+            Gets or sets the name of the package.
+            </summary>
+            <value>The name of the package.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionInfo.Label">
+            <summary>
+            Gets or sets the label.
+            </summary>
+            <value>The label.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionInfo.Description">
+            <summary>
+            Gets or sets the description.
+            </summary>
+            <value>The description.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AdbPermissionInfo.ProtectionLevels">
+            <summary>
+            Gets or sets the protection levels.
+            </summary>
+            <value>The protection levels.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.AmInstrumentOptions">
+            <summary>
+            Options for Instrumentation
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmInstrumentOptions.PrintRawResults">
+            <summary>
+            Gets or sets a value indicating whether to print raw results (otherwise decode report_key_streamresult). Use with a key/value pair of {"perf",{"true"}} to generate raw output for performance measurements.
+            </summary>
+            <value><c>true</c> if print raw results; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmInstrumentOptions.KeyValues">
+            <summary>
+            Gets or sets the key/value pairs.  For test runners a common form is testrunner_flag=value,value,etc.
+            </summary>
+            <value>The key values.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmInstrumentOptions.ProfileToFile">
+            <summary>
+            Gets or sets the file to write profiling data to.
+            </summary>
+            <value>The profile to file.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmInstrumentOptions.Wait">
+            <summary>
+            Gets or sets a value indicating whether to wait for instrumentation to finish before returning.  Required for test runners.
+            </summary>
+            <value><c>true</c> if wait; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmInstrumentOptions.NoWindowAnimation">
+            <summary>
+            Gets or sets a value indicating whether to turn off window animations while running.
+            </summary>
+            <value><c>true</c> if no window animation; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmInstrumentOptions.RunAsUser">
+            <summary>
+            Gets or sets the User to run instrumentation in.  Default is current user if not specified.
+            </summary>
+            <value>The run as user.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.AmStartOptions">
+            <summary>
+            Activity Manager Start Options
+            </summary>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.EnableDebugging">
+            <summary>
+            Gets or sets a value indicating whether to enable debugging.
+            </summary>
+            <value><c>true</c> if enable debugging; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.WaitForLaunch">
+            <summary>
+            Gets or sets a value indicating whether to wait for the launch to complete.
+            </summary>
+            <value><c>true</c> if wait for launch; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.ProfileToFile">
+            <summary>
+            Gets or sets the File to profile to and starts the profiler.
+            </summary>
+            <value>The File to send profiler results to.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.ProfileUntilIdle">
+            <summary>
+            Gets or sets a value indicating whether profiling stops when the app goes idle.
+            </summary>
+            <value><c>true</c> if profile stops when idle; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.RepeatLaunch">
+            <summary>
+            Gets or sets how many times to repeat the activity launch.  Prior to each repeat, the top activity will be finished.
+            </summary>
+            <value>The repeat launch.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.ForceStopTarget">
+            <summary>
+            Gets or sets a value indicating whether force stop the target app before starting the activity.
+            </summary>
+            <value><c>true</c> if force stop target; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.EnableOpenGLTrace">
+            <summary>
+            Gets or sets a value indicating whether to enable tracing of OpenGL functions.
+            </summary>
+            <value><c>true</c> if enable open GLT race; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Cake.AndroidAdb.AmStartOptions.RunAsUserId">
+            <summary>
+            Gets or sets which user to run as; if not specified, then run as the current user.
+            </summary>
+            <value>The run as user identifier.</value>
+        </member>
+        <member name="T:Cake.AndroidAdb.NamespaceDoc">
+            <summary>
+            This namespace contain types 
+            representing data used for interaction with the Android ADB.
+            </summary>
+        </member>
+    </members>
+</doc>

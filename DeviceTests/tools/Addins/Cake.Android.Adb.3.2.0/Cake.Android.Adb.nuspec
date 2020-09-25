@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Cake.Android.Adb</id>
+    <version>3.2.0</version>
+    <title>Cake.Android.Adb</title>
+    <authors>Redth</authors>
+    <owners>Redth</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <projectUrl>https://github.com/cake-contrib/Cake.Android.Adb</projectUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/cake-contrib/graphics/png/cake-contrib-medium.png</iconUrl>
+    <description>Cake Build addon to provide Aliases for Android's ADB (Android Debug Bridge).</description>
+    <tags>Cake Script Build</tags>
+    <repository type="git" url="https://github.com/cake-contrib/Cake.Android.Adb.git" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>
