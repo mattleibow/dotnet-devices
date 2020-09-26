@@ -24,7 +24,7 @@ namespace DotNetDevices.Commands
 
         public async Task RunTestsAsync(
             string app,
-            string? deviceResults = null, // "Documents/TestResults.trx"
+            string? deviceResults = null, // "TestResults.trx"
             string? outputResults = null, // "TestResults.trx"
             string? runtimeString = null,
             string? versionString = null,
@@ -99,7 +99,7 @@ namespace DotNetDevices.Commands
                         logger.LogInformation($"Copying test results from simulator to {dest}...");
 
                         var dataPath = await simctl.GetDataDirectoryAsync(simulator.Udid, bundleId, cancellationToken);
-                        var results = Path.Combine(dataPath, deviceResults);
+                        var results = Path.Combine(dataPath, "Documents", deviceResults);
                         if (File.Exists(results))
                             File.Copy(results, dest, true);
                         else

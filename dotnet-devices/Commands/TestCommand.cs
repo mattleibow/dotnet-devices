@@ -16,7 +16,7 @@ namespace DotNetDevices.Commands
             return new Command("test", "Run the unit test apps.")
             {
                 new Option<string?>(new[] { "--device-results" }, description: "The path on the device where the test results are saved.",
-                    getDefaultValue: () => "Documents/TestResults.trx"),
+                    getDefaultValue: () => "TestResults.trx"),
                 new Option<string?>(new[] { "--output-results" }, description: "The path on the host where the test results are to be saved.",
                     getDefaultValue: () => "TestResults.trx"),
                 new Option<string?>(new[] { "--runtime" }, "The runtime to use when looking for a device."),
@@ -35,8 +35,8 @@ namespace DotNetDevices.Commands
 
         public static async Task<int> HandleTestAsync(
             string? app = null,
-            string? deviceResults = null, // "Documents/TestResults.trx"
-            string? outputResults = null, // "TestResults.trx"
+            string? deviceResults = null,
+            string? outputResults = null,
             string? runtime = null,
             string? version = null,
             bool latest = false,
