@@ -11,6 +11,7 @@ namespace DotNetDevices.Commands
         {
             var command = new RootCommand
             {
+                AndroidCommand.Create(),
                 AppleCommand.Create(),
                 TestCommand.Create(),
             };

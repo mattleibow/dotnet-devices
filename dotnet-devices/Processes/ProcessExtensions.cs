@@ -11,12 +11,15 @@ namespace DotNetDevices.Processes
         private const int ThreadStillRunningExitCode = 259;
         private const int ThreadStillRunningRetry = 3;
 
-        public static Task<ProcessResult> RunAsync(this ProcessStartInfo processStartInfo, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        public static async Task<ProcessResult> RunAsync(this ProcessStartInfo processStartInfo, string? input = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
         {
             // override some info in order to capture the output
             processStartInfo.UseShellExecute = false;
             processStartInfo.RedirectStandardOutput = true;
             processStartInfo.RedirectStandardError = true;
+
+            if (input != null)
+                processStartInfo.RedirectStandardInput = true;
 
             var process = new Process
             {
@@ -57,7 +60,13 @@ namespace DotNetDevices.Processes
                 tcs.TrySetException(new InvalidOperationException("Failed to start process."));
             }
 
-            return tcs.Task;
+            if (input != null)
+            {
+                var write = process.StandardInput.WriteLineAsync(input);
+                await Task.WhenAll(tcs.Task, write);
+            }
+
+            return await tcs.Task;
 
             async void HandleExited(object? sender, EventArgs e)
             {

@@ -19,7 +19,20 @@ namespace DotNetDevices.Processes
 
         public async Task<ProcessResult> RunAsync(string path, string? arguments = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
         {
-            var output = await RunProcessAsync(FindCommand(path), arguments, handleOutput, cancellationToken);
+            var output = await RunProcessAsync(FindCommand(path), arguments, null, handleOutput, cancellationToken);
+
+            if (output.ExitCode != 0)
+                throw new Exception($"Failed to execute: {path} {arguments} - exit code: {output.ExitCode}{Environment.NewLine}{output.Output}");
+
+            logger?.LogDebug(output.ToString());
+            logger?.LogTrace(output.Output);
+
+            return output;
+        }
+
+        public async Task<ProcessResult> RunWithInputAsync(string input, string path, string? arguments = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        {
+            var output = await RunProcessAsync(FindCommand(path), arguments, input, handleOutput, cancellationToken);
 
             if (output.ExitCode != 0)
                 throw new Exception($"Failed to execute: {path} {arguments} - exit code: {output.ExitCode}{Environment.NewLine}{output.Output}");
@@ -48,12 +61,12 @@ namespace DotNetDevices.Processes
             return path;
         }
 
-        private Task<ProcessResult> RunProcessAsync(string path, string? arguments = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        private Task<ProcessResult> RunProcessAsync(string path, string? arguments = null, string? input = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
         {
             var psi = new ProcessStartInfo
             {
                 FileName = path,
-                CreateNoWindow = true
+                CreateNoWindow = true,
             };
 
             if (arguments != null)
@@ -61,7 +74,7 @@ namespace DotNetDevices.Processes
 
             logger?.LogDebug($"Starting process {path} {arguments} in {Environment.CurrentDirectory}...");
 
-            return psi.RunAsync(handleOutput, cancellationToken);
+            return psi.RunAsync(input, handleOutput, cancellationToken);
         }
     }
 }

@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-device</ToolCommandName>
+    <RootNamespace>DotNetDevices</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
+using DotNetDevices.Android;
 
 namespace DotNetDevices.Processes
 {
@@ -31,6 +33,15 @@ namespace DotNetDevices.Processes
         public DateTimeOffset StartTimestamp { get; }
 
         public TimeSpan Elapsed { get; }
+
+        public int OutputCount => outputItems.Length;
+
+        public IEnumerable<string> GetOutput()
+        {
+            foreach (var item in outputItems)
+                if (!item.IsError)
+                    yield return item.Data;
+        }
 
         public override string ToString() =>
             $"Completed with exit code {ExitCode} in {Elapsed}.";
