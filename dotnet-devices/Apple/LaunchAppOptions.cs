@@ -3,7 +3,7 @@ using DotNetDevices.Processes;
 
 namespace DotNetDevices.Apple
 {
-    public class SimulatorLaunchOptions
+    public class LaunchAppOptions
     {
         public bool CaptureOutput { get; set; } = false;
 

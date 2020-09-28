@@ -223,7 +223,7 @@ namespace DotNetDevices.Apple
             await processRunner.RunAsync(xcrun, args, null, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<LaunchedSimulator> LaunchAppAsync(string udid, string appBundleId, SimulatorLaunchOptions? options = null, CancellationToken cancellationToken = default)
+        public async Task<LaunchAppResult> LaunchAppAsync(string udid, string appBundleId, LaunchAppOptions? options = null, CancellationToken cancellationToken = default)
         {
             if (udid == null)
                 throw new ArgumentNullException(nameof(udid));
@@ -247,13 +247,25 @@ namespace DotNetDevices.Apple
 
             try
             {
-                var result = await processRunner.RunAsync(xcrun, args, options?.HandleOutput, cancellationToken).ConfigureAwait(false);
-                return new LaunchedSimulator(result);
+                var result = await processRunner.RunAsync(xcrun, args, Wrap(options?.HandleOutput), cancellationToken).ConfigureAwait(false);
+                return new LaunchAppResult(result);
             }
             catch (ProcessResultException ex) when (ex.InnerException is OperationCanceledException && ex.ProcessResult != null)
             {
                 await TerminateAppAsync(udid, appBundleId, cancellationToken);
-                return new LaunchedSimulator(ex.ProcessResult);
+                return new LaunchAppResult(ex.ProcessResult);
+            }
+
+            static Func<ProcessOutput, bool>? Wrap(Action<ProcessOutput>? handle)
+            {
+                if (handle == null)
+                    return null;
+
+                return o =>
+                {
+                    handle(o);
+                    return true;
+                };
             }
         }
 

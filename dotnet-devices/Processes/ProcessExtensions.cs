@@ -11,7 +11,7 @@ namespace DotNetDevices.Processes
         private const int ThreadStillRunningExitCode = 259;
         private const int ThreadStillRunningRetry = 3;
 
-        public static async Task<ProcessResult> RunAsync(this ProcessStartInfo processStartInfo, string? input = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        public static async Task<ProcessResult> RunAsync(this ProcessStartInfo processStartInfo, string? input = null, Func<ProcessOutput, bool>? handleOutput = null, CancellationToken cancellationToken = default)
         {
             // override some info in order to capture the output
             processStartInfo.UseShellExecute = false;
@@ -73,7 +73,7 @@ namespace DotNetDevices.Processes
                 // if the process is still exiting, give it a little more time
                 for (var retries = 0; retries < ThreadStillRunningRetry && process.ExitCode == ThreadStillRunningExitCode; retries++)
                 {
-                    await Task.Delay(200);
+                    await Task.Delay(200).ConfigureAwait(false);
                 }
 
                 // if it takes too long, just pretend it exited completely
@@ -81,6 +81,109 @@ namespace DotNetDevices.Processes
                 if (exitCode == ThreadStillRunningExitCode)
                     exitCode = 0;
 
+                await FinalizeTask(exitCode).ConfigureAwait(false);
+            }
+
+            async void HandleOutputData(object? sender, DataReceivedEventArgs? e)
+            {
+                if (e?.Data == null)
+                {
+                    outputTcs.TrySetResult(true);
+                    return;
+                }
+
+                var o = new ProcessOutput(e.Data, stopwatch.ElapsedMilliseconds);
+
+                if (handleOutput != null)
+                {
+                    try
+                    {
+                        if (!handleOutput.Invoke(o))
+                            await Detatch();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        outputTcs.TrySetCanceled();
+                        Terminate();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        outputTcs.TrySetException(ex);
+                        Terminate();
+                        return;
+                    }
+                }
+
+                output.Enqueue(o);
+            }
+
+            async void HandleErrorData(object? sender, DataReceivedEventArgs? e)
+            {
+                if (e?.Data == null)
+                {
+                    errorsTcs.TrySetResult(true);
+                    return;
+                }
+
+                var o = new ProcessOutput(e.Data, stopwatch.ElapsedMilliseconds, true);
+
+                if (handleOutput != null)
+                {
+                    try
+                    {
+                        if (!handleOutput.Invoke(o))
+                            await Detatch();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        errorsTcs.TrySetCanceled();
+                        Terminate();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        errorsTcs.TrySetException(ex);
+                        Terminate();
+                        return;
+                    }
+                }
+
+                output.Enqueue(o);
+            }
+
+            void Terminate(bool cancel = false)
+            {
+                if (cancel)
+                    tcs?.TrySetCanceled();
+
+                if (process != null)
+                {
+                    try
+                    {
+                        if (!process.HasExited)
+                            process.Kill();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                }
+            }
+
+            Task Detatch()
+            {
+                process.Exited -= HandleExited;
+                process.OutputDataReceived -= HandleOutputData;
+                process.ErrorDataReceived -= HandleErrorData;
+
+                HandleErrorData(null, null);
+                HandleOutputData(null, null);
+
+                return FinalizeTask(0);
+            }
+
+            async Task FinalizeTask(int exitCode)
+            {
                 try
                 {
                     startTime = process.StartTime;
@@ -102,92 +205,8 @@ namespace DotNetDevices.Processes
                 {
                     var result = new ProcessResult(output.ToArray(), exitCode, startTime, stopwatch.ElapsedMilliseconds);
 
-                    tcs.TrySetException(new ProcessResultException($"The process threw an exception: {ex.Message}", ex, result));
+                    tcs.TrySetException(new ProcessResultException(result, $"The process threw an exception: {ex.Message}", ex));
                 }
-            }
-
-            void Terminate(bool cancel = false)
-            {
-                if (cancel)
-                    tcs?.TrySetCanceled();
-
-                if (process != null)
-                {
-                    try
-                    {
-                        if (!process.HasExited)
-                            process.Kill();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
-                }
-            }
-
-            void HandleOutputData(object? sender, DataReceivedEventArgs e)
-            {
-                if (e.Data == null)
-                {
-                    outputTcs.TrySetResult(true);
-                    return;
-                }
-
-                var o = new ProcessOutput(e.Data, stopwatch.ElapsedMilliseconds);
-
-                if (handleOutput != null)
-                {
-                    try
-                    {
-                        handleOutput.Invoke(o);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        outputTcs.TrySetCanceled();
-                        Terminate();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        outputTcs.TrySetException(ex);
-                        Terminate();
-                        return;
-                    }
-                }
-
-                output.Enqueue(o);
-            }
-
-            void HandleErrorData(object? sender, DataReceivedEventArgs e)
-            {
-                if (e.Data == null)
-                {
-                    errorsTcs.TrySetResult(true);
-                    return;
-                }
-
-                var o = new ProcessOutput(e.Data, stopwatch.ElapsedMilliseconds, true);
-
-                if (handleOutput != null)
-                {
-                    try
-                    {
-                        handleOutput.Invoke(o);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        errorsTcs.TrySetCanceled();
-                        Terminate();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        errorsTcs.TrySetException(ex);
-                        Terminate();
-                        return;
-                    }
-                }
-
-                output.Enqueue(o);
             }
         }
     }

@@ -2,11 +2,11 @@
 
 namespace DotNetDevices.Apple
 {
-    public class LaunchedSimulator
+    public class LaunchAppResult
     {
         private ProcessResult result;
 
-        public LaunchedSimulator(ProcessResult result)
+        public LaunchAppResult(ProcessResult result)
         {
             this.result = result;
         }

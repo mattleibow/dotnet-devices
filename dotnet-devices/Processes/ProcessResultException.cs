@@ -4,23 +4,23 @@ namespace DotNetDevices.Processes
 {
     public class ProcessResultException : Exception
     {
-        public ProcessResultException(ProcessResult? processResult = null)
+        public ProcessResultException(ProcessResult processResult)
         {
             ProcessResult = processResult;
         }
 
-        public ProcessResultException(string? message, ProcessResult? processResult = null)
+        public ProcessResultException(ProcessResult processResult, string? message)
             : base(message)
         {
             ProcessResult = processResult;
         }
 
-        public ProcessResultException(string? message, Exception? innerException, ProcessResult? processResult = null)
+        public ProcessResultException(ProcessResult processResult, string? message, Exception? innerException)
             : base(message, innerException)
         {
             ProcessResult = processResult;
         }
 
-        public ProcessResult? ProcessResult { get; }
+        public ProcessResult ProcessResult { get; }
     }
 }

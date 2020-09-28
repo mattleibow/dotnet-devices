@@ -64,7 +64,7 @@ namespace DotNetDevices.Commands
 
                     var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-                    var launched = await simctl.LaunchAppAsync(simulator.Udid, bundleId, new SimulatorLaunchOptions
+                    var launched = await simctl.LaunchAppAsync(simulator.Udid, bundleId, new LaunchAppOptions
                     {
                         CaptureOutput = true,
                         BootSimulator = true,

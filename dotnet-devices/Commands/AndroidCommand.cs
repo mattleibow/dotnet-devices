@@ -19,9 +19,9 @@ namespace DotNetDevices.Commands
     {
         public static Command Create()
         {
-            return new Command("android", "Work with Android emulators.")
+            return new Command("android", "Work with Android virtual devices.")
             {
-                new Command("list", "List the emulators.")
+                new Command("list", "List the virtual devices.")
                 {
                     new Option<string?>(new[] { "--sdk" }, "Whether or not to only include the available simulators."),
                     new Option(new[] { "--available" }, "Whether or not to only include the available simulators."),
@@ -33,27 +33,21 @@ namespace DotNetDevices.Commands
                     new Argument<string?>("TERM", "The search term to use when filtering simulators. This could be any number of properties (UDID, runtime, version, availability, or state) as well as part of the simulator name.")
                         { Arity = ArgumentArity.ZeroOrOne },
                 }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleListAsync))!)),
+                new Command("create", "Create a new virtual device.")
+                {
+                    new Option<string?>(new[] { "--sdk" }, "The path to the Android SDK directory."),
+                    new Option(new[] { "--replace" }, "Replace any existing virtual devices with the same name."),
+                    CommandLine.CreateVerbosity(),
+                    new Argument<string?>("NAME", "The name of the new virtual device."),
+                    new Argument<string?>("PACKAGE", "The package to use for the new virtual device."),
+                }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleCreateAsync))!)),
                 new Command("boot", "Boot a particular simulator.")
                 {
+                    new Option<string?>(new[] { "--sdk" }, "Whether or not to only include the available simulators."),
                     CommandLine.CreateVerbosity(),
-                    new Argument<string?>("UDID", ParseUdid)
-                    {
-                        Description = "The UDID of the simulator to boot.",
-                        Arity = ArgumentArity.ExactlyOne
-                    },
+                    new Argument<string?>("NAME", "The UDID of the simulator to boot."),
                 }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleBootAsync))!)),
             };
-
-            static string? ParseUdid(ArgumentResult result)
-            {
-                var udid = result.Tokens[0].Value;
-
-                if (Guid.TryParse(udid, out _))
-                    return udid;
-
-                result.ErrorMessage = "The UDID must be a valid UDID.";
-                return null;
-            }
         }
 
         public static async Task HandleListAsync(
@@ -94,11 +88,20 @@ namespace DotNetDevices.Commands
             }
             catch { }
 
+            try
+            {
+                await avdmanager.DeleteVirtualDeviceAsync("TESTED");
+            }
+            catch { }
+
             await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64");
 
             await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64", new VirtualDeviceCreateOptions { Overwrite = true });
 
-            await avdmanager.DeleteVirtualDeviceAsync("TESTING");
+            await avdmanager.RenameVirtualDeviceAsync("TESTING", "TESTED");
+            await avdmanager.MoveVirtualDeviceAsync("TESTED", "/Users/matthew/.android/avd/tested.avd");
+
+            //await avdmanager.DeleteVirtualDeviceAsync("TESTING");
 
             //term = term?.ToLowerInvariant()?.Trim();
 
@@ -155,27 +158,55 @@ namespace DotNetDevices.Commands
             //console.Append(new StackLayoutView { table });
         }
 
-        public static async Task<int> HandleBootAsync(
-            string udid,
+        public static async Task HandleCreateAsync(
+            string name,
+            string package,
+            bool replace = false,
+            string? sdk = null,
             string? verbosity = null,
             IConsole console = null!,
             CancellationToken cancellationToken = default)
         {
             var logger = console.CreateLogger(verbosity);
 
-            var simctl = new SimulatorControl(logger);
-            var simulator = await simctl.GetSimulatorAsync(udid, cancellationToken);
+            var avdmanager = new AVDManager(sdk, logger);
 
-            if (simulator == null)
+            var options = new VirtualDeviceCreateOptions
             {
-                logger.LogError($"No simulator with UDID {udid} was found.");
+                Overwrite = replace
+            };
+
+            await avdmanager.CreateVirtualDeviceAsync(name, package, options, cancellationToken);
+        }
+
+        public static async Task<int> HandleBootAsync(
+            string name,
+            string? sdk = null,
+            string? verbosity = null,
+            IConsole console = null!,
+            CancellationToken cancellationToken = default)
+        {
+            var logger = console.CreateLogger(verbosity);
+
+            var emulator = new EmulatorManager(sdk, logger);
+
+            var avds = await emulator.GetVirtualDevicesAsync(cancellationToken);
+            if (avds.All(a => !a.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                logger.LogError($"No virtual device with name {name} was found.");
                 return 1;
             }
 
-            if (simulator.State == SimulatorState.Booted)
-                logger.LogInformation($"Simulator was already booted.");
+            var options = new BootVirtualDeviceOptions
+            {
+                NoSnapshots = false,
+                WipeData = true,
+            };
+            var port = await emulator.BootVirtualDeviceAsync(name, options, cancellationToken);
+            if (port == -1)
+                logger.LogInformation($"Virtual device was already booted.");
             else
-                await simctl.BootSimulatorAsync(udid, cancellationToken);
+                logger.LogInformation($"device was booted to port {port}.");
 
             return 0;
         }

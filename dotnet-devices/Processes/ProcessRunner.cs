@@ -17,30 +17,30 @@ namespace DotNetDevices.Processes
             this.logger = logger;
         }
 
-        public async Task<ProcessResult> RunAsync(string path, string? arguments = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        public async Task<ProcessResult> RunAsync(string path, string? arguments = null, Func<ProcessOutput, bool>? handleOutput = null, CancellationToken cancellationToken = default)
         {
-            var output = await RunProcessAsync(FindCommand(path), arguments, null, handleOutput, cancellationToken);
+            var result = await RunProcessAsync(FindCommand(path), arguments, null, handleOutput, cancellationToken);
 
-            if (output.ExitCode != 0)
-                throw new Exception($"Failed to execute: {path} {arguments} - exit code: {output.ExitCode}{Environment.NewLine}{output.Output}");
+            if (result.ExitCode != 0)
+                throw new ProcessResultException(result, $"Failed to execute: {path} {arguments} - exit code: {result.ExitCode}{Environment.NewLine}{result.Output}");
 
-            logger?.LogDebug(output.ToString());
-            logger?.LogTrace(output.Output);
+            logger?.LogDebug(result.ToString());
+            logger?.LogTrace(result.Output);
 
-            return output;
+            return result;
         }
 
-        public async Task<ProcessResult> RunWithInputAsync(string input, string path, string? arguments = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        public async Task<ProcessResult> RunWithInputAsync(string input, string path, string? arguments = null, Func<ProcessOutput, bool>? handleOutput = null, CancellationToken cancellationToken = default)
         {
-            var output = await RunProcessAsync(FindCommand(path), arguments, input, handleOutput, cancellationToken);
+            var result = await RunProcessAsync(FindCommand(path), arguments, input, handleOutput, cancellationToken);
 
-            if (output.ExitCode != 0)
-                throw new Exception($"Failed to execute: {path} {arguments} - exit code: {output.ExitCode}{Environment.NewLine}{output.Output}");
+            if (result.ExitCode != 0)
+                throw new ProcessResultException(result, $"Failed to execute: {path} {arguments} - exit code: {result.ExitCode}{Environment.NewLine}{result.Output}");
 
-            logger?.LogDebug(output.ToString());
-            logger?.LogTrace(output.Output);
+            logger?.LogDebug(result.ToString());
+            logger?.LogTrace(result.Output);
 
-            return output;
+            return result;
         }
 
         private string FindCommand(string path, bool allowOSFallback = true)
@@ -61,7 +61,7 @@ namespace DotNetDevices.Processes
             return path;
         }
 
-        private Task<ProcessResult> RunProcessAsync(string path, string? arguments = null, string? input = null, Action<ProcessOutput>? handleOutput = null, CancellationToken cancellationToken = default)
+        private Task<ProcessResult> RunProcessAsync(string path, string? arguments = null, string? input = null, Func<ProcessOutput, bool>? handleOutput = null, CancellationToken cancellationToken = default)
         {
             var psi = new ProcessStartInfo
             {
