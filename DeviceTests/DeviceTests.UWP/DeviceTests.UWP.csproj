@@ -8,7 +8,7 @@
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DeviceTests.UWP</RootNamespace>
-    <AssemblyName>XamarinEssentialsDeviceTestsUWP</AssemblyName>
+    <AssemblyName>DeviceTestsUWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
@@ -17,7 +17,9 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint>7301D596D36DC7AD797E01BBF93CC2789AEA96C0</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile>DeviceTests.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -113,25 +115,14 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
     <PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
-      <Name>Windows Mobile Extensions for the UWP</Name>
-    </SDKReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
-      <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
-      <Name>Xamarin.Essentials</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DeviceTests\DeviceTests.csproj">
-      <Project>{be0de9a3-d92c-47c5-9ec4-dfb546bbdf77}</Project>
+      <Project>{E049A504-C168-41DC-80DF-0C4C6F363761}</Project>
       <Name>DeviceTests</Name>
     </ProjectReference>
   </ItemGroup>
@@ -153,9 +144,6 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AppBundleFile.txt" />
-    <Content Include="Folder\AppBundleFile_Nested.txt" />
-    <Content Include="AppBundleFile_NoExtension" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-100.png" />
     <Content Include="Assets\LockScreenLogo.scale-125.png" />
@@ -190,10 +178,10 @@
     <Content Include="Assets\Wide310x150Logo.scale-400.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DeviceTests.UWP_TemporaryKey.pfx" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+    <None Include="DeviceTests.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDevices.Android
 {
@@ -24,11 +24,12 @@ namespace DotNetDevices.Android
                     return sdkRoot;
 
                 var path = Path.Combine(sdkRoot, toolPath);
-                if (!File.Exists(path))
+                var foundPath = FindFuzzyPath(path);
+                if (foundPath == null)
                     throw new FileNotFoundException($"Path to tool '{toolPath}' was not found in the SDK '{sdkRoot}'.", path);
 
                 // return the full path to the tool
-                return path;
+                return foundPath;
             }
 
             foreach (var envvar in envvars)
@@ -48,15 +49,32 @@ namespace DotNetDevices.Android
                     return varSdkRoot;
 
                 var path = Path.Combine(varSdkRoot, toolPath);
-                if (!File.Exists(path))
+                var foundPath = FindFuzzyPath(path);
+                if (foundPath == null)
                 {
                     logger?.LogWarning($"Found SDK at '{varSdkRoot}', but it did not contan the tool '{toolPath}'.");
                     continue;
                 }
 
                 // return the full path to the tool
-                return path;
+                return foundPath;
             }
+
+            return null;
+        }
+
+        private static string? FindFuzzyPath(string path)
+        {
+            if (File.Exists(path))
+                return path;
+
+            var otherPath = Path.ChangeExtension(path, ".exe");
+            if (File.Exists(otherPath))
+                return otherPath;
+
+            otherPath = Path.ChangeExtension(path, ".bat");
+            if (File.Exists(otherPath))
+                return otherPath;
 
             return null;
         }
