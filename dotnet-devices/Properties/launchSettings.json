@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dotnet-devices": {
+      "commandName": "Project",
+      "commandLineArgs": "test \"C:\\Projects\\dotnet-devices\\DeviceTests\\DeviceTests.Android\\bin\\Debug\\net.dot.devicetests-Signed.apk\""
+    }
+  }
+}

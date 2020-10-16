@@ -63,6 +63,55 @@ namespace DotNetDevices.Android
             return null;
         }
 
+        public static string? FindBuildToolPath(string? sdkRoot, string tool, ILogger? logger)
+        {
+            var newSdkRoot = FindPath(sdkRoot, null, logger);
+            if (newSdkRoot == null)
+            {
+                logger?.LogDebug($"Unable to resolve Android SDK root directory from '{sdkRoot}'.");
+                return null;
+            }
+
+            var versions = Directory.GetDirectories(Path.Combine(newSdkRoot, "build-tools"));
+            if (versions.Length == 0)
+            {
+                logger?.LogDebug($"Unable to locate any build tools in '{newSdkRoot}'.");
+                return null;
+            }
+            else
+            {
+                logger?.LogDebug($"Found {versions.Length} build tools versions in '{newSdkRoot}'.");
+            }
+
+            var path = default(string);
+            var latestSoFar = new Version();
+
+            foreach (var versionDir in versions)
+            {
+                var v = Path.GetFileName(versionDir);
+                if (Version.TryParse(v, out var version) && version > latestSoFar)
+                {
+                    var foundPath = FindFuzzyPath(Path.Combine(versionDir, tool));
+                    if (foundPath != null)
+                    {
+                        latestSoFar = version;
+                        path = foundPath;
+                    }
+                }
+                else
+                {
+                    logger?.LogDebug($"Found invalid build tool version: '{v}'.");
+                }
+            }
+
+            if (path == null)
+                logger?.LogDebug($"Unable to find any build tools in  '{newSdkRoot}'.");
+            else
+                logger?.LogDebug($"Found build tool '{path}'.");
+
+            return path;
+        }
+
         private static string? FindFuzzyPath(string path)
         {
             if (File.Exists(path))

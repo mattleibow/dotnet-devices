@@ -1,11 +1,11 @@
-﻿using System;
+﻿using DotNetDevices.Logging;
+using Microsoft.Extensions.Logging;
+using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetDevices.Logging;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDevices.Commands
 {
@@ -60,14 +60,27 @@ namespace DotNetDevices.Commands
 
             try
             {
-                // detect iOS .app files (directories)
                 if (Path.GetExtension(app).Equals(".app", StringComparison.OrdinalIgnoreCase))
                 {
+                    // detect iOS .app files (directories)
                     var cmd = new AppleTestCommand(logger);
                     await cmd.RunTestsAsync(app, deviceResults, outputResults, runtime, version, latest, deviceType, deviceName, reset, shutdown, cancellationToken);
-                }
 
-                return 0;
+                    return 0;
+                }
+                else if (Path.GetExtension(app).Equals(".apk", StringComparison.OrdinalIgnoreCase))
+                {
+                    // detect Android .apk files
+                    var cmd = new AndroidTestCommand(null, logger);
+                    await cmd.RunTestsAsync(app, deviceResults, outputResults, runtime, version, latest, deviceType, deviceName, reset, shutdown, cancellationToken);
+
+                    return 0;
+                }
+                else
+                {
+                    logger.LogError($"Unknown app package type: {app}");
+                    return 1;
+                }
             }
             catch (Exception ex)
             {

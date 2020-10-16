@@ -1,17 +1,15 @@
-﻿using System;
+﻿using DotNetDevices.Android;
+using DotNetDevices.Logging;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using System.CommandLine.Rendering;
 using System.CommandLine.Rendering.Views;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetDevices.Android;
-using DotNetDevices.Apple;
-using DotNetDevices.Logging;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDevices.Commands
 {
@@ -23,15 +21,8 @@ namespace DotNetDevices.Commands
             {
                 new Command("list", "List the virtual devices.")
                 {
-                    new Option<string?>(new[] { "--sdk" }, "Whether or not to only include the available simulators."),
-                    new Option(new[] { "--available" }, "Whether or not to only include the available simulators."),
-                    new Option(new[] { "--booted" }, "Whether or not to only include the booted simulators."),
-                    new Option<SimulatorRuntime>(new[] { "--runtime" }, "The runtime to use when filtering."),
-                    new Option<string?>(new[] { "--version" }, description: "The runtime version to use when filtering. This could be in either <major> or <major>.<minor> version formats.",
-                        parseArgument: CommandLine.ParseVersion),
+                    new Option<string?>(new[] { "--sdk" }, "The path to the Android SDK directory."),
                     CommandLine.CreateVerbosity(),
-                    new Argument<string?>("TERM", "The search term to use when filtering simulators. This could be any number of properties (UDID, runtime, version, availability, or state) as well as part of the simulator name.")
-                        { Arity = ArgumentArity.ZeroOrOne },
                 }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleListAsync))!)),
                 new Command("create", "Create a new virtual device.")
                 {
@@ -41,22 +32,23 @@ namespace DotNetDevices.Commands
                     new Argument<string?>("NAME", "The name of the new virtual device."),
                     new Argument<string?>("PACKAGE", "The package to use for the new virtual device."),
                 }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleCreateAsync))!)),
-                new Command("boot", "Boot a particular simulator.")
+                new Command("boot", "Boot a particular virtual device.")
                 {
-                    new Option<string?>(new[] { "--sdk" }, "Whether or not to only include the available simulators."),
+                    new Option<string?>(new[] { "--sdk" }, "The path to the Android SDK directory."),
                     CommandLine.CreateVerbosity(),
-                    new Argument<string?>("NAME", "The UDID of the simulator to boot."),
+                    new Argument<string?>("NAME", "The name of the virtual device to boot."),
                 }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleBootAsync))!)),
+                new Command("install", "Download and install packages using the SDK Manager.")
+                {
+                    new Option<string?>(new[] { "--sdk" }, "The path to the Android SDK directory."),
+                    CommandLine.CreateVerbosity(),
+                    new Argument<string?>("PACKAGE", "The package to install."),
+                }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleInstallAsync))!)),
             };
         }
 
         public static async Task HandleListAsync(
-            string? term = null,
             string? sdk = null,
-            bool available = false,
-            bool booted = false,
-            SimulatorRuntime? runtime = null,
-            string? version = null,
             string? verbosity = null,
             IConsole console = null!,
             CancellationToken cancellationToken = default)
@@ -64,49 +56,36 @@ namespace DotNetDevices.Commands
             var logger = console.CreateLogger(verbosity);
             var avdmanager = new AVDManager(sdk, logger);
 
-            var devices = await avdmanager.GetDevicesAsync();
-            foreach (var device in devices)
-            {
-                logger?.LogInformation(" - " + device.ToString());
-            }
+            var devices = await avdmanager.GetVirtualDevicesAsync(cancellationToken);
 
-            var targets = await avdmanager.GetTargetsAsync();
-            foreach (var target in targets)
-            {
-                logger?.LogInformation(" - " + target.ToString());
-            }
+            var filtered = (IEnumerable<VirtualDevice>)devices;
 
-            var avds = await avdmanager.GetVirtualDevicesAsync();
-            foreach (var avd in avds)
-            {
-                logger?.LogInformation(" - " + avd.ToString());
-            }
 
-            try
-            {
-                await avdmanager.DeleteVirtualDeviceAsync("TESTING");
-            }
-            catch { }
+            //try
+            //{
+            //    await avdmanager.DeleteVirtualDeviceAsync("TESTING");
+            //}
+            //catch { }
 
-            try
-            {
-                await avdmanager.DeleteVirtualDeviceAsync("TESTED");
-            }
-            catch { }
+            //try
+            //{
+            //    await avdmanager.DeleteVirtualDeviceAsync("TESTED");
+            //}
+            //catch { }
 
-            await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64");
+            //await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64");
 
-            await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64", new VirtualDeviceCreateOptions { Overwrite = true });
+            //await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64", new VirtualDeviceCreateOptions { Overwrite = true });
 
-            await avdmanager.RenameVirtualDeviceAsync("TESTING", "TESTED");
-            await avdmanager.MoveVirtualDeviceAsync("TESTED", "/Users/matthew/.android/avd/tested.avd");
+            //await avdmanager.RenameVirtualDeviceAsync("TESTING", "TESTED");
+            //await avdmanager.MoveVirtualDeviceAsync("TESTED", "/Users/matthew/.android/avd/tested.avd");
 
             //await avdmanager.DeleteVirtualDeviceAsync("TESTING");
 
-            //term = term?.ToLowerInvariant()?.Trim();
 
-            //var simctl = new SimulatorControl(logger);
-            //var simulators = await simctl.GetSimulatorsAsync(cancellationToken);
+
+
+            //term = term?.ToLowerInvariant()?.Trim();
 
             //var filtered = (IEnumerable<Simulator>)simulators;
             //if (!string.IsNullOrWhiteSpace(term))
@@ -142,20 +121,16 @@ namespace DotNetDevices.Commands
             //        filtered = filtered.Where(s => s.Version.Major == versionMjor);
             //}
 
-            //var all = filtered.ToList();
+            var all = filtered.ToList();
 
-            //logger.LogInformation($"Found {all.Count} simulator[s].");
+            logger.LogInformation($"Found {all.Count} virtual device[s].");
 
-            //var table = new TableView<Simulator>();
-            //table.AddColumn(s => s.Udid, "UDID");
-            //table.AddColumn(s => s.Name, "Name");
-            //table.AddColumn(s => s.Runtime, "Runtime");
-            //table.AddColumn(s => s.Version, "Version");
-            //table.AddColumn(s => s.Availability, "Availability");
-            //table.AddColumn(s => s.State, "State");
-            //table.Items = all;
+            var table = new TableView<VirtualDevice>();
+            table.AddColumn(s => s.Id, "Id");
+            table.AddColumn(s => s.Name, "Name");
+            table.Items = all;
 
-            //console.Append(new StackLayoutView { table });
+            console.Append(new StackLayoutView { table });
         }
 
         public static async Task HandleCreateAsync(
@@ -171,7 +146,7 @@ namespace DotNetDevices.Commands
 
             var avdmanager = new AVDManager(sdk, logger);
 
-            var options = new VirtualDeviceCreateOptions
+            var options = new CreateVirtualDeviceOptions
             {
                 Overwrite = replace
             };
@@ -191,7 +166,7 @@ namespace DotNetDevices.Commands
             var emulator = new EmulatorManager(sdk, logger);
 
             var avds = await emulator.GetVirtualDevicesAsync(cancellationToken);
-            if (avds.All(a => !a.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            if (avds.All(a => !a.Id.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
                 logger.LogError($"No virtual device with name {name} was found.");
                 return 1;
@@ -207,6 +182,22 @@ namespace DotNetDevices.Commands
                 logger.LogInformation($"Virtual device was already booted.");
             else
                 logger.LogInformation($"device was booted to port {port}.");
+
+            return 0;
+        }
+
+        public static async Task<int> HandleInstallAsync(
+            string package,
+            string? sdk = null,
+            string? verbosity = null,
+            IConsole console = null!,
+            CancellationToken cancellationToken = default)
+        {
+            var logger = console.CreateLogger(verbosity);
+
+            var sdkmanager = new SDKManager(sdk, logger);
+
+            await sdkmanager.InstallAsync(package, cancellationToken);
 
             return 0;
         }

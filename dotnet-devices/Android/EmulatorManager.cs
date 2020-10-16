@@ -101,7 +101,7 @@ namespace DotNetDevices.Android
             var avd = new List<VirtualDevice>(result.OutputCount);
             foreach (var output in result.GetOutput())
             {
-                avd.Add(new VirtualDevice(output));
+                avd.Add(new VirtualDevice(output, output));
             }
             return avd;
         }

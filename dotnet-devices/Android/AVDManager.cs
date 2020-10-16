@@ -1,16 +1,18 @@
-﻿using System;
+﻿using DotNetDevices.Processes;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetDevices.Processes;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDevices.Android
 {
     public class AVDManager
     {
+        private static Regex virtualDevicePathRegex = new Regex(@"\s*Path\:\s*(.+)");
+
         private readonly ProcessRunner processRunner;
         private readonly ILogger? logger;
         private readonly string avdmanager;
@@ -60,16 +62,30 @@ namespace DotNetDevices.Android
         {
             logger?.LogInformation("Retrieving all the virtual devices...");
 
-            var args = $"list avd -c";
+            var args = $"list avd";
 
             var result = await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
 
-            var avd = new List<VirtualDevice>(result.OutputCount);
+            var avds = new List<VirtualDevice>();
+
             foreach (var output in GetListResults(result))
             {
-                avd.Add(new VirtualDevice(output));
+                var pathMatch = virtualDevicePathRegex.Match(output);
+                if (pathMatch.Success)
+                {
+                    var path = pathMatch.Groups[1].Value;
+                    var configIniPath = Path.Combine(path, "config.ini");
+                    if (Directory.Exists(path) && File.Exists(configIniPath))
+                    {
+                        var config = new VirtualDeviceConfig(configIniPath, logger);
+                        var avd = await config.CreateVirtualDeviceAsync(cancellationToken).ConfigureAwait(false);
+
+                        avds.Add(avd);
+                    }
+                }
             }
-            return avd;
+
+            return avds;
         }
 
         public async Task DeleteVirtualDeviceAsync(string name, CancellationToken cancellationToken = default)
@@ -81,7 +97,7 @@ namespace DotNetDevices.Android
             await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task CreateVirtualDeviceAsync(string name, string package, VirtualDeviceCreateOptions? options = null, CancellationToken cancellationToken = default)
+        public async Task CreateVirtualDeviceAsync(string name, string package, CreateVirtualDeviceOptions? options = null, CancellationToken cancellationToken = default)
         {
             logger?.LogInformation($"Creating virtual device '{name}'...");
 
@@ -110,7 +126,7 @@ namespace DotNetDevices.Android
             await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
         }
 
-        private IEnumerable<string> GetListResults(ProcessResult result)
+        private static IEnumerable<string> GetListResults(ProcessResult result)
         {
             foreach (var output in result.GetOutput())
             {
@@ -134,18 +150,5 @@ namespace DotNetDevices.Android
                 yield return o;
             }
         }
-    }
-
-    public class VirtualDeviceCreateOptions
-    {
-        public string? Device { get; set; }
-
-        public bool Overwrite { get; set; }
-
-        public string? Path { get; set; }
-
-        public string? SharedSdCardPath { get; set; }
-
-        public string? NewSdCardSize { get; set; }
     }
 }

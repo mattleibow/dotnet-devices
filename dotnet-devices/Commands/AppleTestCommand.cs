@@ -1,12 +1,12 @@
-﻿using System;
+﻿using DotNetDevices.Apple;
+using DotNetDevices.Testing;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetDevices.Apple;
-using DotNetDevices.Testing;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDevices.Commands
 {
@@ -38,6 +38,10 @@ namespace DotNetDevices.Commands
             // validate app / bundle
             var plist = new PList(Path.Combine(app, "Info.plist"), logger);
             var bundleId = await plist.GetBundleIdentifierAsync(cancellationToken);
+            if (string.IsNullOrEmpty(bundleId))
+                throw new Exception("Unable to determine the bundle identifer for the app.");
+
+            logger.LogInformation($"Running tests on '{bundleId}'...");
 
             // validate requested OS
             var simulatorType = ParseSimulatorType(deviceType);

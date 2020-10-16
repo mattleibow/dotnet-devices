@@ -54,13 +54,14 @@ namespace DotNetDevices.Apple
             }
         }
 
-        public async Task<string> GetStringValueAsync(string key, CancellationToken cancellationToken = default)
+        public async Task<string?> GetStringValueAsync(string key, CancellationToken cancellationToken = default)
         {
             var xdoc = await GetDocumentAsync(cancellationToken).ConfigureAwait(false);
 
             var keyElements = xdoc.Descendants("key").Where(x => x.Value == key).ToArray();
             if (keyElements.Length == 0)
-                throw new Exception($"Unable to find key {key}.");
+                return null;
+
             if (keyElements.Length > 1)
                 throw new Exception($"Found multiple instances of key {key}.");
 
@@ -71,7 +72,7 @@ namespace DotNetDevices.Apple
             return value.Value;
         }
 
-        public Task<string> GetBundleIdentifierAsync(CancellationToken cancellationToken = default) =>
+        public Task<string?> GetBundleIdentifierAsync(CancellationToken cancellationToken = default) =>
             GetStringValueAsync("CFBundleIdentifier", cancellationToken);
     }
 }
