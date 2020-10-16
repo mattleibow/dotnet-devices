@@ -1,4 +1,5 @@
 ﻿using DotNetDevices.Android;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,6 +21,71 @@ namespace DotNetDevices.Tests
                 Assert.NotNull(device);
                 Assert.Equal(id, device.Id);
                 Assert.Equal(name, device.Name);
+            }
+
+            [Fact]
+            public async Task CanReadTV()
+            {
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_TV.txt");
+
+                var device = await config.CreateVirtualDeviceAsync();
+
+                Assert.Equal(VirtualDeviceType.TV, device.Type);
+                Assert.Equal(new Version(10, 0), device.Version);
+                Assert.Equal(29, device.ApiLevel);
+                Assert.Equal(VirtualDeviceRuntime.AndroidTV, device.Runtime);
+            }
+
+            [Fact]
+            public async Task CanReadWear()
+            {
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Wear.txt");
+
+                var device = await config.CreateVirtualDeviceAsync();
+
+                Assert.Equal(VirtualDeviceType.Wearable, device.Type);
+                Assert.Equal(new Version(9, 0), device.Version);
+                Assert.Equal(28, device.ApiLevel);
+                Assert.Equal(VirtualDeviceRuntime.AndroidWear, device.Runtime);
+            }
+
+            [Fact]
+            public async Task CanReadTablet()
+            {
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Tablet.txt");
+
+                var device = await config.CreateVirtualDeviceAsync();
+
+                Assert.Equal(VirtualDeviceType.Tablet, device.Type);
+                Assert.Equal(new Version(9, 0), device.Version);
+                Assert.Equal(28, device.ApiLevel);
+                Assert.Equal(VirtualDeviceRuntime.Android, device.Runtime);
+            }
+
+            [Fact]
+            public async Task CanReadGeneric()
+            {
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Generic.txt");
+
+                var device = await config.CreateVirtualDeviceAsync();
+
+                Assert.Equal(VirtualDeviceType.Phone, device.Type);
+                Assert.Equal(new Version(9, 0), device.Version);
+                Assert.Equal(28, device.ApiLevel);
+                Assert.Equal(VirtualDeviceRuntime.Android, device.Runtime);
+            }
+
+            [Fact]
+            public async Task CanReadPhone()
+            {
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Phone.txt");
+
+                var device = await config.CreateVirtualDeviceAsync();
+
+                Assert.Equal(VirtualDeviceType.Phone, device.Type);
+                Assert.Equal(new Version(10, 0), device.Version);
+                Assert.Equal(29, device.ApiLevel);
+                Assert.Equal(VirtualDeviceRuntime.Android, device.Runtime);
             }
         }
     }

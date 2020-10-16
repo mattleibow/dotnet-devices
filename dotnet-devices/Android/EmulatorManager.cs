@@ -90,7 +90,7 @@ namespace DotNetDevices.Android
             }
         }
 
-        public async Task<IEnumerable<VirtualDevice>> GetVirtualDevicesAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<string>> GetVirtualDevicesAsync(CancellationToken cancellationToken = default)
         {
             logger?.LogInformation("Retrieving all the virtual devices...");
 
@@ -98,10 +98,10 @@ namespace DotNetDevices.Android
 
             var result = await processRunner.RunAsync(emulator, args, null, cancellationToken).ConfigureAwait(false);
 
-            var avd = new List<VirtualDevice>(result.OutputCount);
+            var avd = new List<string>(result.OutputCount);
             foreach (var output in result.GetOutput())
             {
-                avd.Add(new VirtualDevice(output, output));
+                avd.Add(output.Trim());
             }
             return avd;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using DotNetDevices.Android;
 
 namespace DotNetDevices.Processes
 {
@@ -40,6 +39,13 @@ namespace DotNetDevices.Processes
         {
             foreach (var item in outputItems)
                 if (!item.IsError)
+                    yield return item.Data;
+        }
+
+        public IEnumerable<string> GetErrorOutput()
+        {
+            foreach (var item in outputItems)
+                if (item.IsError)
                     yield return item.Data;
         }
 

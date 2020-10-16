@@ -32,6 +32,12 @@ namespace DotNetDevices.Commands
                     new Argument<string?>("NAME", "The name of the new virtual device."),
                     new Argument<string?>("PACKAGE", "The package to use for the new virtual device."),
                 }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleCreateAsync))!)),
+                new Command("delete", "Delete an existing virtual device.")
+                {
+                    new Option<string?>(new[] { "--sdk" }, "The path to the Android SDK directory."),
+                    CommandLine.CreateVerbosity(),
+                    new Argument<string?>("NAME", "The name of the new virtual device."),
+                }.WithHandler(CommandHandler.Create(typeof(AndroidCommand).GetMethod(nameof(HandleDeleteAsync))!)),
                 new Command("boot", "Boot a particular virtual device.")
                 {
                     new Option<string?>(new[] { "--sdk" }, "The path to the Android SDK directory."),
@@ -59,31 +65,6 @@ namespace DotNetDevices.Commands
             var devices = await avdmanager.GetVirtualDevicesAsync(cancellationToken);
 
             var filtered = (IEnumerable<VirtualDevice>)devices;
-
-
-            //try
-            //{
-            //    await avdmanager.DeleteVirtualDeviceAsync("TESTING");
-            //}
-            //catch { }
-
-            //try
-            //{
-            //    await avdmanager.DeleteVirtualDeviceAsync("TESTED");
-            //}
-            //catch { }
-
-            //await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64");
-
-            //await avdmanager.CreateVirtualDeviceAsync("TESTING", "system-images;android-28;google_apis_playstore;x86_64", new VirtualDeviceCreateOptions { Overwrite = true });
-
-            //await avdmanager.RenameVirtualDeviceAsync("TESTING", "TESTED");
-            //await avdmanager.MoveVirtualDeviceAsync("TESTED", "/Users/matthew/.android/avd/tested.avd");
-
-            //await avdmanager.DeleteVirtualDeviceAsync("TESTING");
-
-
-
 
             //term = term?.ToLowerInvariant()?.Trim();
 
@@ -128,6 +109,10 @@ namespace DotNetDevices.Commands
             var table = new TableView<VirtualDevice>();
             table.AddColumn(s => s.Id, "Id");
             table.AddColumn(s => s.Name, "Name");
+            table.AddColumn(s => s.Type, "Type");
+            table.AddColumn(s => s.Version, "Version");
+            table.AddColumn(s => s.ApiLevel, "API Level");
+            //table.AddColumn(s => s.State, "State");
             table.Items = all;
 
             console.Append(new StackLayoutView { table });
@@ -146,12 +131,43 @@ namespace DotNetDevices.Commands
 
             var avdmanager = new AVDManager(sdk, logger);
 
+            if (!replace)
+            {
+                var devices = await avdmanager.GetVirtualDeviceNamesAsync(cancellationToken);
+                if (devices.Any(d => d.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    logger.LogInformation($"Virtual device already exists.");
+                    return;
+                }
+            }
+
             var options = new CreateVirtualDeviceOptions
             {
-                Overwrite = replace
+                Overwrite = replace,
             };
 
             await avdmanager.CreateVirtualDeviceAsync(name, package, options, cancellationToken);
+        }
+
+        public static async Task HandleDeleteAsync(
+            string name,
+            string? sdk = null,
+            string? verbosity = null,
+            IConsole console = null!,
+            CancellationToken cancellationToken = default)
+        {
+            var logger = console.CreateLogger(verbosity);
+
+            var avdmanager = new AVDManager(sdk, logger);
+
+            var devices = await avdmanager.GetVirtualDeviceNamesAsync(cancellationToken);
+            if (devices.All(d => !d.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                logger.LogInformation($"Virtual device does not exist.");
+                return;
+            }
+
+            await avdmanager.DeleteVirtualDeviceAsync(name, cancellationToken);
         }
 
         public static async Task<int> HandleBootAsync(
@@ -166,7 +182,7 @@ namespace DotNetDevices.Commands
             var emulator = new EmulatorManager(sdk, logger);
 
             var avds = await emulator.GetVirtualDevicesAsync(cancellationToken);
-            if (avds.All(a => !a.Id.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            if (avds.All(a => !a.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
                 logger.LogError($"No virtual device with name {name} was found.");
                 return 1;

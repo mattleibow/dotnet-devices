@@ -58,6 +58,34 @@ namespace DotNetDevices.Android
             return targets;
         }
 
+        public async Task<IEnumerable<string>> GetVirtualDeviceNamesAsync(CancellationToken cancellationToken = default)
+        {
+            logger?.LogInformation("Retrieving all the virtual devices...");
+
+            var args = $"list avd";
+
+            var result = await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
+
+            var avds = new List<string>();
+
+            foreach (var output in GetListResults(result))
+            {
+                var pathMatch = virtualDevicePathRegex.Match(output);
+                if (pathMatch.Success)
+                {
+                    var path = pathMatch.Groups[1].Value;
+                    if (Directory.Exists(path))
+                    {
+                        var avd = Path.GetFileNameWithoutExtension(path);
+
+                        avds.Add(avd);
+                    }
+                }
+            }
+
+            return avds;
+        }
+
         public async Task<IEnumerable<VirtualDevice>> GetVirtualDevicesAsync(CancellationToken cancellationToken = default)
         {
             logger?.LogInformation("Retrieving all the virtual devices...");
@@ -94,7 +122,27 @@ namespace DotNetDevices.Android
 
             var args = $"delete avd --name \"{name}\"";
 
-            await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ProcessResultException ex) when (WasExisting(ex.ProcessResult))
+            {
+                // no-op
+            }
+
+            bool WasExisting(ProcessResult result)
+            {
+                var expected = $"Error: There is no Android Virtual Device named '{name}'.";
+
+                foreach (var output in result.GetErrorOutput())
+                {
+                    if (output.Contains(expected, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
         }
 
         public async Task CreateVirtualDeviceAsync(string name, string package, CreateVirtualDeviceOptions? options = null, CancellationToken cancellationToken = default)
@@ -105,7 +153,27 @@ namespace DotNetDevices.Android
             if (options?.Overwrite == true)
                 args += " --force";
 
-            await processRunner.RunWithInputAsync("no", avdmanager, args, null, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await processRunner.RunWithInputAsync("no", avdmanager, args, null, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ProcessResultException ex) when (WasExisting(ex.ProcessResult))
+            {
+                // no-op
+            }
+
+            bool WasExisting(ProcessResult result)
+            {
+                var expected = $"Error: Android Virtual Device '{name}' already exists.";
+
+                foreach (var output in result.GetErrorOutput())
+                {
+                    if (output.Contains(expected, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
         }
 
         public async Task RenameVirtualDeviceAsync(string name, string newName, CancellationToken cancellationToken = default)

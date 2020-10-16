@@ -1,6 +1,8 @@
 ﻿using DotNetDevices.Android;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,193 +47,198 @@ namespace DotNetDevices.Commands
 
             logger.LogInformation($"Running tests on '{packageName}'...");
 
-            //// validate requested OS
-            //var simulatorType = ParseSimulatorType(deviceType);
-            //var runtime = ParseSimulatorRuntime(runtimeString);
-            //var runtimeVersion = await ParseVersionAsync(versionString, runtime, cancellationToken);
+            // validate requested OS
+            var avdRuntime = ParseDeviceRuntime(runtimeString);
+            var avdTypes = ParseDeviceTypes(deviceType, avdRuntime);
+            var avdApiLevel = ParseApiLevel(versionString);
+            if (avdApiLevel == 0)
+                latest = true;
 
-            //logger.LogInformation($"Looking for an available {simulatorType} ({runtimeVersion}) simulator...");
-            //var available = await GetAvailableSimulatorsAsync(simulatorType, runtime, runtimeVersion, latest, cancellationToken);
+            logger.LogInformation($"Looking for an available {string.Join("|", avdTypes)}{(avdApiLevel == 0 ? "" : $" (API {avdApiLevel})")} virtual device...");
+            var available = await GetAvailableDevicesAsync(deviceName, avdTypes, avdApiLevel, latest, cancellationToken);
 
-            //// first look for a booted device
-            //var simulator = available.FirstOrDefault(s => s.State == SimulatorState.Booted) ?? available.FirstOrDefault();
-            //logger.LogInformation($"Using simulator {simulator.Name} ({simulator.Runtime} {simulator.Version}): {simulator.Udid}");
+            // get the first device
+            var avd = available.FirstOrDefault();
+            logger.LogInformation($"Using virtual device {avd.Name} ({avd.Runtime} {avd.Version}): {avd.Id}");
 
-            //try
-            //{
-            //    if (reset)
-            //        await simctl.EraseSimulatorAsync(simulator.Udid, true, cancellationToken);
+            try
+            {
+                //    if (reset)
+                //        await simctl.EraseSimulatorAsync(simulator.Udid, true, cancellationToken);
 
-            //    await simctl.InstallAppAsync(simulator.Udid, app, true, cancellationToken);
+                //    await simctl.InstallAppAsync(simulator.Udid, app, true, cancellationToken);
 
-            //    try
-            //    {
-            //        var parser = new TestResultsParser();
+                try
+                {
+                    //        var parser = new TestResultsParser();
 
-            //        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    //        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            //        var launched = await simctl.LaunchAppAsync(simulator.Udid, bundleId, new LaunchAppOptions
-            //        {
-            //            CaptureOutput = true,
-            //            BootSimulator = true,
-            //            HandleOutput = output =>
-            //            {
-            //                parser.ParseTestOutput(
-            //                    output,
-            //                    line => logger?.LogWarning(line),
-            //                    async () =>
-            //                    {
-            //                        try
-            //                        {
-            //                            // wait a few seconds before terminating
-            //                            await Task.Delay(1000, cts.Token);
+                    //        var launched = await simctl.LaunchAppAsync(simulator.Udid, bundleId, new LaunchAppOptions
+                    //        {
+                    //            CaptureOutput = true,
+                    //            BootSimulator = true,
+                    //            HandleOutput = output =>
+                    //            {
+                    //                parser.ParseTestOutput(
+                    //                    output,
+                    //                    line => logger?.LogWarning(line),
+                    //                    async () =>
+                    //                    {
+                    //                        try
+                    //                        {
+                    //                            // wait a few seconds before terminating
+                    //                            await Task.Delay(1000, cts.Token);
 
-            //                            await simctl.TerminateAppAsync(simulator.Udid, bundleId, cts.Token);
-            //                        }
-            //                        catch (OperationCanceledException)
-            //                        {
-            //                            // we expected this
-            //                        }
-            //                    });
-            //            },
-            //        }, cancellationToken);
+                    //                            await simctl.TerminateAppAsync(simulator.Udid, bundleId, cts.Token);
+                    //                        }
+                    //                        catch (OperationCanceledException)
+                    //                        {
+                    //                            // we expected this
+                    //                        }
+                    //                    });
+                    //            },
+                    //        }, cancellationToken);
 
-            //        cts.Cancel();
+                    //        cts.Cancel();
 
-            //        if (deviceResults != null)
-            //        {
-            //            var dest = outputResults ?? Path.GetFileName(deviceResults);
+                    //        if (deviceResults != null)
+                    //        {
+                    //            var dest = outputResults ?? Path.GetFileName(deviceResults);
 
-            //            logger.LogInformation($"Copying test results from simulator to {dest}...");
+                    //            logger.LogInformation($"Copying test results from simulator to {dest}...");
 
-            //            var dataPath = await simctl.GetDataDirectoryAsync(simulator.Udid, bundleId, cancellationToken);
-            //            var results = Path.Combine(dataPath, "Documents", deviceResults);
-            //            if (File.Exists(results))
-            //                File.Copy(results, dest, true);
-            //            else
-            //                logger.LogInformation($"No test results found.");
-            //        }
-            //        else
-            //        {
-            //            logger.LogInformation($"Unable to determine the test results file.");
-            //        }
-            //    }
-            //    finally
-            //    {
-            //        await simctl.UninstallAppAsync(simulator.Udid, bundleId, false, cancellationToken);
-            //    }
-            //}
-            //finally
-            //{
-            //    if (shutdown)
-            //        await simctl.ShutdownSimulatorAsync(simulator.Udid, cancellationToken);
-            //}
+                    //            var dataPath = await simctl.GetDataDirectoryAsync(simulator.Udid, bundleId, cancellationToken);
+                    //            var results = Path.Combine(dataPath, "Documents", deviceResults);
+                    //            if (File.Exists(results))
+                    //                File.Copy(results, dest, true);
+                    //            else
+                    //                logger.LogInformation($"No test results found.");
+                    //        }
+                    //        else
+                    //        {
+                    //            logger.LogInformation($"Unable to determine the test results file.");
+                    //        }
+                }
+                finally
+                {
+                    //        await simctl.UninstallAppAsync(simulator.Udid, bundleId, false, cancellationToken);
+                }
+            }
+            finally
+            {
+                //    if (shutdown)
+                //        await simctl.ShutdownSimulatorAsync(simulator.Udid, cancellationToken);
+            }
         }
 
-        //private async Task<List<Simulator>> GetAvailableSimulatorsAsync(SimulatorType type, SimulatorRuntime runtime, Version version, bool useLatest = true, CancellationToken cancellationToken = default)
-        //{
-        //    // load all simulators
-        //    var simulators = await simctl.GetSimulatorsAsync(cancellationToken);
+        private async Task<List<VirtualDevice>> GetAvailableDevicesAsync(string? deviceName, VirtualDeviceType[] types, int apiLevel, bool useLatest = true, CancellationToken cancellationToken = default)
+        {
+            // load all virtual devices
+            var avds = await avdmanager.GetVirtualDevicesAsync(cancellationToken);
 
-        //    // find ones that can be used
-        //    var available = simulators
-        //        .Where(s => s.Availability == SimulatorAvailability.Available)
-        //        .Where(s => s.Runtime == runtime)
-        //        .Where(s => s.Type == type);
-        //    logger.LogDebug($"Found some available simulators:");
-        //    foreach (var sim in available)
-        //    {
-        //        logger.LogDebug($"  {sim.Name} ({sim.Runtime} {sim.Version}): {sim.Udid}");
-        //    }
+            // use the name directly
+            if (!string.IsNullOrEmpty(deviceName))
+                return avds.Where(d => d.Id == deviceName || d.Name == deviceName).ToList();
 
-        //    // filter by version info
-        //    string matchingPattern;
-        //    if (useLatest)
-        //    {
-        //        var min = version;
-        //        var max = new Version(min.Major + 1, 0);
-        //        available = available.Where(s => s.Version >= min && s.Version < max);
-        //        matchingPattern = $"[{min}, {max})";
-        //    }
-        //    else
-        //    {
-        //        available = available.Where(s => s.Version == version);
-        //        matchingPattern = $"[{version}]";
-        //    }
+            // find ones that can be used
+            var available = avds
+                .Where(s => types.Contains(s.Type));
+            logger.LogDebug($"Found some available virtual devices:");
+            foreach (var avd in available)
+            {
+                logger.LogDebug($"  {avd.Name} ({avd.Runtime} API {avd.ApiLevel}): {avd.Id}");
+            }
 
-        //    var matching = available.ToList();
-        //    if (matching.Count > 0)
-        //    {
-        //        logger.LogDebug($"Found matching simulators {matchingPattern}:");
-        //        foreach (var sim in matching)
-        //        {
-        //            logger.LogDebug($"  {sim.Name} ({sim.Runtime} {sim.Version}): {sim.Udid}");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        throw new Exception($"Unable to find any simulators that match version {matchingPattern}.");
-        //    }
+            // filter by version info
+            string matchingPattern;
+            if (useLatest)
+            {
+                var max = available.Where(d => d.ApiLevel >= apiLevel).Max(d => d.ApiLevel);
+                available = available.Where(d => d.ApiLevel == max);
+                matchingPattern = apiLevel > 0 ? $"[{apiLevel})" : $"[{max}]";
+            }
+            else
+            {
+                available = available.Where(d => d.ApiLevel == apiLevel);
+                matchingPattern = $"[{apiLevel}]";
+            }
 
-        //    return matching;
-        //}
+            var matching = available.ToList();
+            if (matching.Count == 0)
+                throw new Exception($"Unable to find any virtual devices that match version {matchingPattern}.");
 
-        //private async Task<Version> ParseVersionAsync(string? version, SimulatorRuntime os, CancellationToken cancellationToken = default)
-        //{
-        //    var osVersion = version?.ToLowerInvariant().Trim();
-        //    if (!Version.TryParse(osVersion, out var numberVersion))
-        //    {
-        //        if (int.TryParse(osVersion, out var v))
-        //            numberVersion = new Version(v, 0);
-        //        else if (string.IsNullOrEmpty(osVersion) || osVersion == "default")
-        //            numberVersion = await simctl.GetDefaultVersionAsync(os, cancellationToken);
-        //        else
-        //            throw new Exception($"Unable to determine the version for {osVersion}.");
-        //    }
+            logger.LogDebug($"Found matching virtual devices {matchingPattern}:");
+            foreach (var avd in matching)
+            {
+                logger.LogDebug($"  {avd.Name} ({avd.Runtime} API {avd.ApiLevel}): {avd.Id}");
+            }
 
-        //    return numberVersion;
-        //}
+            return matching;
+        }
 
-        //private static SimulatorRuntime ParseSimulatorRuntime(string? runtime)
-        //{
-        //    var osName = runtime?.ToLowerInvariant()?.Trim();
-        //    var os = osName switch
-        //    {
-        //        null => SimulatorRuntime.iOS,
-        //        "" => SimulatorRuntime.iOS,
-        //        "ios" => SimulatorRuntime.iOS,
-        //        "watchos" => SimulatorRuntime.watchOS,
-        //        "tvos" => SimulatorRuntime.tvOS,
-        //        _ => throw new Exception($"Unable to determine the OS for {runtime}.")
-        //    };
-        //    return os;
-        //}
+        private int ParseApiLevel(string? version)
+        {
+            var osVersion = version?.ToLowerInvariant().Trim();
 
-        //private static SimulatorType ParseSimulatorType(string? deviceType)
-        //{
-        //    var deviceTypeName = deviceType?.ToLowerInvariant()?.Trim();
-        //    var device = deviceTypeName switch
-        //    {
-        //        // iPhone
-        //        null => SimulatorType.iPhone,
-        //        "" => SimulatorType.iPhone,
-        //        "iphone" => SimulatorType.iPhone,
-        //        "phone" => SimulatorType.iPhone,
-        //        // iPad
-        //        "ipad" => SimulatorType.iPad,
-        //        "tablet" => SimulatorType.iPad,
-        //        // iPod
-        //        "ipod" => SimulatorType.iPod,
-        //        // Apple TV
-        //        "tv" => SimulatorType.AppleTV,
-        //        "appletv" => SimulatorType.AppleTV,
-        //        // Apple Watch
-        //        "watch" => SimulatorType.AppleWatch,
-        //        "applewatch" => SimulatorType.AppleWatch,
-        //        //
-        //        _ => throw new Exception($"Unable to determine the simulator type for {deviceType}.")
-        //    };
-        //    return device;
-        //}
+            if (string.IsNullOrEmpty(osVersion))
+                return 0;
+
+            if (!int.TryParse(osVersion, out var numberVersion))
+                throw new Exception($"Unable to determine the version for {osVersion}.");
+
+            return numberVersion;
+        }
+
+        private static VirtualDeviceRuntime ParseDeviceRuntime(string? runtime)
+        {
+            var osName = runtime?.ToLowerInvariant()?.Trim();
+            var os = osName switch
+            {
+                null => VirtualDeviceRuntime.Android,
+                "" => VirtualDeviceRuntime.Android,
+                "android" => VirtualDeviceRuntime.Android,
+                "watch" => VirtualDeviceRuntime.AndroidWear,
+                "wear" => VirtualDeviceRuntime.AndroidWear,
+                "androidwear" => VirtualDeviceRuntime.AndroidWear,
+                "wearable" => VirtualDeviceRuntime.AndroidWear,
+                "tv" => VirtualDeviceRuntime.AndroidTV,
+                "androidtv" => VirtualDeviceRuntime.AndroidTV,
+                _ => throw new Exception($"Unable to determine the OS for {runtime}.")
+            };
+            return os;
+        }
+
+        private static VirtualDeviceType[] ParseDeviceTypes(string? deviceType, VirtualDeviceRuntime runtime)
+        {
+            var fallback = runtime switch
+            {
+                VirtualDeviceRuntime.Android => new[] { VirtualDeviceType.Phone, VirtualDeviceType.Tablet },
+                VirtualDeviceRuntime.AndroidWear => new[] { VirtualDeviceType.Wearable },
+                VirtualDeviceRuntime.AndroidTV => new[] { VirtualDeviceType.TV },
+                _ => new[] { VirtualDeviceType.Phone | VirtualDeviceType.Tablet },
+            };
+
+            var deviceTypeName = deviceType?.ToLowerInvariant()?.Trim();
+            var device = deviceTypeName switch
+            {
+                // phone
+                null => fallback,
+                "" => fallback,
+                "phone" => new[] { VirtualDeviceType.Phone },
+                // tablet
+                "tab" => new[] { VirtualDeviceType.Tablet },
+                "tablet" => new[] { VirtualDeviceType.Tablet },
+                // TV
+                "tv" => new[] { VirtualDeviceType.TV },
+                // Wear
+                "watch" => new[] { VirtualDeviceType.Wearable },
+                "wear" => new[] { VirtualDeviceType.Wearable },
+                "wearable" => new[] { VirtualDeviceType.Wearable },
+                //
+                _ => throw new Exception($"Unable to determine the virtual device type for {deviceType}.")
+            };
+            return device;
+        }
     }
 }
