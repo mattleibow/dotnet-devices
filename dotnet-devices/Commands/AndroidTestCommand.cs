@@ -1,7 +1,9 @@
 ﻿using DotNetDevices.Android;
+using DotNetDevices.Testing;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +16,8 @@ namespace DotNetDevices.Commands
         private readonly ILogger logger;
         private readonly AVDManager avdmanager;
         private readonly EmulatorManager emulator;
-        private readonly AaptTool aapt;
+        private readonly Aapt aapt;
+        private readonly Adb adb;
 
         public AndroidTestCommand(string? sdkRoot, ILogger logger)
         {
@@ -23,7 +26,8 @@ namespace DotNetDevices.Commands
 
             avdmanager = new AVDManager(sdkRoot, logger);
             emulator = new EmulatorManager(sdkRoot, logger);
-            aapt = new AaptTool(sdkRoot, logger);
+            aapt = new Aapt(sdkRoot, logger);
+            adb = new Adb(sdkRoot, logger);
         }
 
         public async Task RunTestsAsync(
@@ -44,8 +48,12 @@ namespace DotNetDevices.Commands
             var packageName = androidManifest.PackageName;
             if (string.IsNullOrEmpty(packageName))
                 throw new Exception("Unable to determine the package name for the app.");
+            var activityName = androidManifest.MainLauncherActivity;
+            if (string.IsNullOrEmpty(activityName))
+                throw new Exception("Unable to determine the main launcher activity name for the app.");
 
             logger.LogInformation($"Running tests on '{packageName}'...");
+            logger.LogInformation($"Detected main launcher activity '{activityName}'.");
 
             // validate requested OS
             var avdRuntime = ParseDeviceRuntime(runtimeString);
@@ -61,74 +69,93 @@ namespace DotNetDevices.Commands
             var avd = available.FirstOrDefault();
             logger.LogInformation($"Using virtual device {avd.Name} ({avd.Runtime} {avd.Version}): {avd.Id}");
 
+            string? serial = null;
             try
             {
-                //    if (reset)
-                //        await simctl.EraseSimulatorAsync(simulator.Udid, true, cancellationToken);
+                if (reset)
+                {
+                    var bootedDevice = await adb.GetVirtualDeviceWithIdAsync(avd.Id, cancellationToken);
+                    if (bootedDevice != null)
+                        await adb.ShutdownVirtualDeviceAsync(bootedDevice.Serial);
 
-                //    await simctl.InstallAppAsync(simulator.Udid, app, true, cancellationToken);
+                    await avdmanager.ResetVirtualDeviceAsync(avd.Id, cancellationToken);
+                }
+
+                var bootOptions = new BootVirtualDeviceOptions
+                {
+                    WipeData = reset,
+                };
+                var port = await emulator.BootVirtualDeviceAsync(avd.Id, bootOptions, cancellationToken);
+                if (port == -1)
+                {
+                    // device was already booted, so find it
+                    var bootedDevice = await adb.GetVirtualDeviceWithIdAsync(avd.Id, cancellationToken);
+                    if (bootedDevice == null)
+                        throw new Exception($"Virtual device '{avd.Name}' was already booted, but was not able to be found.");
+
+                    serial = bootedDevice.Serial;
+                    logger.LogDebug($"Virutal device was already booted, found serial '{serial}'");
+                }
+                else
+                {
+                    serial = $"emulator-{port}";
+                    logger.LogDebug($"Virtual device was booted to port {port}, assuming serial '{serial}'");
+                }
+
+                var installOptions = new InstallAppOptions
+                {
+                    SkipSharedRuntimeValidation = false,
+                };
+                await adb.InstallAppAsync(serial, app, installOptions, cancellationToken);
 
                 try
                 {
-                    //        var parser = new TestResultsParser();
+                    await adb.ClearLogcatAsync(serial, cancellationToken);
 
-                    //        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    var parser = new TestResultsParser();
 
-                    //        var launched = await simctl.LaunchAppAsync(simulator.Udid, bundleId, new LaunchAppOptions
-                    //        {
-                    //            CaptureOutput = true,
-                    //            BootSimulator = true,
-                    //            HandleOutput = output =>
-                    //            {
-                    //                parser.ParseTestOutput(
-                    //                    output,
-                    //                    line => logger?.LogWarning(line),
-                    //                    async () =>
-                    //                    {
-                    //                        try
-                    //                        {
-                    //                            // wait a few seconds before terminating
-                    //                            await Task.Delay(1000, cts.Token);
+                    var logcatTask = adb.LogcatAsync(serial, new LogcatOptions
+                    {
+                        HandleOutput = output =>
+                        {
+                            parser.ParseTestOutput(
+                                output,
+                                line => logger?.LogWarning(line),
+                                () => throw new TaskCanceledException());
+                        }
+                    }, cancellationToken);
 
-                    //                            await simctl.TerminateAppAsync(simulator.Udid, bundleId, cts.Token);
-                    //                        }
-                    //                        catch (OperationCanceledException)
-                    //                        {
-                    //                            // we expected this
-                    //                        }
-                    //                    });
-                    //            },
-                    //        }, cancellationToken);
+                    await adb.LaunchActivityAsync(serial, $"{packageName}/{activityName}", cancellationToken);
 
-                    //        cts.Cancel();
+                    await logcatTask;
 
-                    //        if (deviceResults != null)
-                    //        {
-                    //            var dest = outputResults ?? Path.GetFileName(deviceResults);
+                    if (deviceResults != null)
+                    {
+                        var dest = outputResults ?? Path.GetFileName(deviceResults);
 
-                    //            logger.LogInformation($"Copying test results from simulator to {dest}...");
+                        logger.LogInformation($"Copying test results from virtual device to {dest}...");
 
-                    //            var dataPath = await simctl.GetDataDirectoryAsync(simulator.Udid, bundleId, cancellationToken);
-                    //            var results = Path.Combine(dataPath, "Documents", deviceResults);
-                    //            if (File.Exists(results))
-                    //                File.Copy(results, dest, true);
-                    //            else
-                    //                logger.LogInformation($"No test results found.");
-                    //        }
-                    //        else
-                    //        {
-                    //            logger.LogInformation($"Unable to determine the test results file.");
-                    //        }
+                        var dataPath = await adb.GetDataDirectoryAsync(serial, packageName, cancellationToken);
+                        var results = Path.Combine(dataPath, deviceResults).Replace("\\", "/");
+                        if (await adb.PathExistsAsync(serial, packageName, results, cancellationToken))
+                            await adb.PullFileAsync(serial, packageName, results, dest, true, cancellationToken);
+                        else
+                            logger.LogInformation($"No test results found.");
+                    }
+                    else
+                    {
+                        logger.LogInformation($"Unable to determine the test results file.");
+                    }
                 }
                 finally
                 {
-                    //        await simctl.UninstallAppAsync(simulator.Udid, bundleId, false, cancellationToken);
+                    await adb.UninstallAppAsync(serial, packageName, cancellationToken);
                 }
             }
             finally
             {
-                //    if (shutdown)
-                //        await simctl.ShutdownSimulatorAsync(simulator.Udid, cancellationToken);
+                if (shutdown && serial != null)
+                    await adb.ShutdownVirtualDeviceAsync(serial, cancellationToken);
             }
         }
 

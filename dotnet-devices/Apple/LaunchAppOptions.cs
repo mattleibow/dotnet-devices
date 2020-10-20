@@ -7,8 +7,6 @@ namespace DotNetDevices.Apple
     {
         public bool CaptureOutput { get; set; } = false;
 
-        public bool BootSimulator { get; set; } = false;
-
         public Action<ProcessOutput>? HandleOutput { get; set; }
     }
 }

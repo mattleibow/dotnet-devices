@@ -4,14 +4,14 @@ namespace DotNetDevices.Android
 {
     public class VirtualDevice
     {
-        public VirtualDevice(string id, string name, string package, VirtualDeviceType type, int apiLevel, string? configPath)
+        public VirtualDevice(string id, string name, string package, VirtualDeviceType type, int apiLevel, string? avdPath)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Package = package ?? throw new ArgumentNullException(nameof(package));
             Type = type;
             ApiLevel = apiLevel;
-            ConfigPath = configPath;
+            AvdPath = avdPath;
         }
 
         public string Id { get; }
@@ -24,7 +24,7 @@ namespace DotNetDevices.Android
 
         public int ApiLevel { get; }
 
-        public string? ConfigPath { get; }
+        public string? AvdPath { get; }
 
         public Version Version =>
             ApiLevel switch

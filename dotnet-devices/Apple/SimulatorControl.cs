@@ -1,13 +1,13 @@
-﻿using System;
+﻿using DotNetDevices.Processes;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetDevices.Processes;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace DotNetDevices.Apple
 {
@@ -183,7 +183,7 @@ namespace DotNetDevices.Apple
             await EnsureShutdownAsync(udid, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task EraseSimulatorAsync(string udid, bool shutdown = false, CancellationToken cancellationToken = default)
+        public async Task EraseSimulatorAsync(string udid, CancellationToken cancellationToken = default)
         {
             if (udid == null)
                 throw new ArgumentNullException(nameof(udid));
@@ -194,14 +194,11 @@ namespace DotNetDevices.Apple
             if (sim == null)
                 throw new Exception($"Unable to find simulator {udid}.");
 
-            if (shutdown && sim.State != SimulatorState.Shutdown)
-                await ShutdownSimulatorAsync(udid, cancellationToken).ConfigureAwait(false);
-
             var args = $"simctl erase \"{udid}\"";
             await processRunner.RunAsync(xcrun, args, null, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task InstallAppAsync(string udid, string appPath, bool boot = false, CancellationToken cancellationToken = default)
+        public async Task InstallAppAsync(string udid, string appPath, CancellationToken cancellationToken = default)
         {
             if (udid == null)
                 throw new ArgumentNullException(nameof(udid));
@@ -215,9 +212,6 @@ namespace DotNetDevices.Apple
             var sim = await GetSimulatorNoLoggingAsync(udid, cancellationToken).ConfigureAwait(false);
             if (sim == null)
                 throw new Exception($"Unable to find simulator {udid}.");
-
-            if (boot && sim.State != SimulatorState.Booted)
-                await BootSimulatorAsync(udid, cancellationToken).ConfigureAwait(false);
 
             var args = $"simctl install \"{udid}\" \"{appPath}\"";
             await processRunner.RunAsync(xcrun, args, null, cancellationToken).ConfigureAwait(false);
@@ -235,9 +229,6 @@ namespace DotNetDevices.Apple
             var sim = await GetSimulatorNoLoggingAsync(udid, cancellationToken).ConfigureAwait(false);
             if (sim == null)
                 throw new Exception($"Unable to find simulator {udid}.");
-
-            if (options?.BootSimulator == true && sim.State != SimulatorState.Booted)
-                await BootSimulatorAsync(udid, cancellationToken).ConfigureAwait(false);
 
             var console = options?.CaptureOutput == true
                 ? "--console"
@@ -289,7 +280,7 @@ namespace DotNetDevices.Apple
             await processRunner.RunAsync(xcrun, args, null, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task UninstallAppAsync(string udid, string appBundleId, bool boot = false, CancellationToken cancellationToken = default)
+        public async Task UninstallAppAsync(string udid, string appBundleId, CancellationToken cancellationToken = default)
         {
             if (udid == null)
                 throw new ArgumentNullException(nameof(udid));
@@ -302,14 +293,8 @@ namespace DotNetDevices.Apple
             if (sim == null)
                 throw new Exception($"Unable to find simulator {udid}.");
 
-            if (boot && sim.State != SimulatorState.Booted)
-                await BootSimulatorAsync(udid, cancellationToken).ConfigureAwait(false);
-
             var args = $"simctl uninstall \"{udid}\" \"{appBundleId}\"";
             await processRunner.RunAsync(xcrun, args, null, cancellationToken).ConfigureAwait(false);
-
-            if (boot && sim.State != SimulatorState.Booted)
-                await ShutdownSimulatorAsync(udid, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task EnsureBootedAsync(string udid, CancellationToken cancellationToken)
@@ -317,7 +302,7 @@ namespace DotNetDevices.Apple
             while ((await GetSimulatorNoLoggingAsync(udid, cancellationToken).ConfigureAwait(false))!.State != SimulatorState.Booted)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -326,7 +311,7 @@ namespace DotNetDevices.Apple
             while ((await GetSimulatorNoLoggingAsync(udid, cancellationToken).ConfigureAwait(false))!.State != SimulatorState.Shutdown)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
             }
         }
 

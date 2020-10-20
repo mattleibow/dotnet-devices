@@ -1,11 +1,11 @@
-﻿using System;
+﻿using DotNetDevices.Processes;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DotNetDevices.Processes;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDevices.Android
 {
@@ -27,14 +27,14 @@ namespace DotNetDevices.Android
                 ?? throw new ArgumentException($"Unable to locate the Android Emulator. Make sure that ANDROID_HOME or ANDROID_SDK_ROOT is set.");
         }
 
-        public async Task<int> BootVirtualDeviceAsync(string name, BootVirtualDeviceOptions? options = null, CancellationToken cancellationToken = default)
+        public async Task<int> BootVirtualDeviceAsync(string avdId, BootVirtualDeviceOptions? options = null, CancellationToken cancellationToken = default)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            if (avdId == null)
+                throw new ArgumentNullException(nameof(avdId));
 
-            logger?.LogInformation($"Booting virtual device '{name}'...");
+            logger?.LogInformation($"Booting virtual device '{avdId}'...");
 
-            var args = $"-avd {name} -verbose";
+            var args = $"-avd {avdId} -verbose";
             if (options?.NoWindow == true)
                 args += " -no-boot-anim -no-window";
             if (options?.NoSnapshots == true)
@@ -77,7 +77,7 @@ namespace DotNetDevices.Android
                 return true;
             }
 
-            bool IsAlreadyLaunched(ProcessResultException ex)
+            static bool IsAlreadyLaunched(ProcessResultException ex)
             {
                 foreach (var output in ex.ProcessResult.GetOutput())
                 {

@@ -14,13 +14,16 @@ namespace DotNetDevices.Android
 
         private readonly string configPath;
         private readonly ILogger? logger;
+        private readonly string? avdPath;
 
         public Dictionary<string, string>? properties;
 
-        public VirtualDeviceConfig(string configPath, ILogger? logger = null)
+        public VirtualDeviceConfig(string avdPath, ILogger? logger = null)
         {
-            this.configPath = configPath ?? throw new ArgumentNullException(nameof(configPath));
+            this.avdPath = avdPath ?? throw new ArgumentNullException(nameof(avdPath));
             this.logger = logger;
+
+            configPath = Path.Combine(avdPath, "config.ini");
         }
 
         public async Task<IReadOnlyDictionary<string, string>> GetPropertiesAsync(CancellationToken cancellationToken = default)
@@ -50,10 +53,7 @@ namespace DotNetDevices.Android
             var props = await GetPropertiesAsync(cancellationToken).ConfigureAwait(false);
 
             if (!props.TryGetValue("avdid", out var id))
-            {
-                var avdDir = Path.GetDirectoryName(configPath);
-                id = Path.GetFileNameWithoutExtension(avdDir);
-            }
+                id = Path.GetFileNameWithoutExtension(avdPath);
 
             if (string.IsNullOrEmpty(id))
                 throw new Exception($"Invalid config.ini. Unable to find the virtual device ID.");
@@ -77,7 +77,7 @@ namespace DotNetDevices.Android
             if (!TryGetType(props, out var type))
                 type = VirtualDeviceType.Unknown;
 
-            return new VirtualDevice(id, name, package, type, apiLevel, configPath);
+            return new VirtualDevice(id, name, package, type, apiLevel, avdPath);
         }
 
         private static bool TryGetType(IReadOnlyDictionary<string, string> props, out VirtualDeviceType value)

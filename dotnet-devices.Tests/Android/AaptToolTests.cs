@@ -18,7 +18,7 @@ namespace DotNetDevices.Tests
             {
                 var xmltree = File.ReadAllText(file);
 
-                var xdoc = AaptTool.ParseXmlTree(xmltree);
+                var xdoc = Aapt.ParseXmlTree(xmltree);
 
                 Assert.NotNull(xdoc);
             }
@@ -27,7 +27,7 @@ namespace DotNetDevices.Tests
             public void ParseIsValid()
             {
                 var xmltree = File.ReadAllText("TestData/Android/CompiledXmlDump.txt");
-                var xdoc = AaptTool.ParseXmlTree(xmltree);
+                var xdoc = Aapt.ParseXmlTree(xmltree);
                 Assert.NotNull(xdoc);
 
                 var manifest = xdoc.Root;

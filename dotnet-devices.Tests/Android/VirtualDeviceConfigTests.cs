@@ -10,8 +10,8 @@ namespace DotNetDevices.Tests
         public class CreateVirtualDeviceAsync
         {
             [Theory]
-            [InlineData("TestData/Android/AvdConfigIni_Normal.txt", "pixel_2_q_10_0_-_api_29", "Pixel 2 Q 10.0 - API 29")]
-            [InlineData("TestData/Android/AvdConfigIni_Tiny.txt", "pixel_2_q_10_0_-_api_29", "pixel_2_q_10_0_-_api_29")]
+            [InlineData("TestData/Android/AvdConfigIni_Normal.avd", "pixel_2_q_10_0_-_api_29", "Pixel 2 Q 10.0 - API 29")]
+            [InlineData("TestData/Android/AvdConfigIni_Tiny.avd", "pixel_2_q_10_0_-_api_29", "pixel_2_q_10_0_-_api_29")]
             public async Task CanCreateInstance(string file, string id, string name)
             {
                 var config = new VirtualDeviceConfig(file);
@@ -26,7 +26,7 @@ namespace DotNetDevices.Tests
             [Fact]
             public async Task CanReadTV()
             {
-                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_TV.txt");
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_TV.avd");
 
                 var device = await config.CreateVirtualDeviceAsync();
 
@@ -39,7 +39,7 @@ namespace DotNetDevices.Tests
             [Fact]
             public async Task CanReadWear()
             {
-                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Wear.txt");
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Wear.avd");
 
                 var device = await config.CreateVirtualDeviceAsync();
 
@@ -52,7 +52,7 @@ namespace DotNetDevices.Tests
             [Fact]
             public async Task CanReadTablet()
             {
-                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Tablet.txt");
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Tablet.avd");
 
                 var device = await config.CreateVirtualDeviceAsync();
 
@@ -65,7 +65,7 @@ namespace DotNetDevices.Tests
             [Fact]
             public async Task CanReadGeneric()
             {
-                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Generic.txt");
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Generic.avd");
 
                 var device = await config.CreateVirtualDeviceAsync();
 
@@ -78,7 +78,7 @@ namespace DotNetDevices.Tests
             [Fact]
             public async Task CanReadPhone()
             {
-                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Phone.txt");
+                var config = new VirtualDeviceConfig("TestData/Android/AvdConfigIni_Phone.avd");
 
                 var device = await config.CreateVirtualDeviceAsync();
 

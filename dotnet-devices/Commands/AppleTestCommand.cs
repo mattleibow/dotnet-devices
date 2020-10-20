@@ -58,9 +58,14 @@ namespace DotNetDevices.Commands
             try
             {
                 if (reset)
-                    await simctl.EraseSimulatorAsync(simulator.Udid, true, cancellationToken);
+                {
+                    await simctl.ShutdownSimulatorAsync(simulator.Udid, cancellationToken);
+                    await simctl.EraseSimulatorAsync(simulator.Udid, cancellationToken);
+                }
 
-                await simctl.InstallAppAsync(simulator.Udid, app, true, cancellationToken);
+                await simctl.BootSimulatorAsync(simulator.Udid, cancellationToken);
+
+                await simctl.InstallAppAsync(simulator.Udid, app, cancellationToken);
 
                 try
                 {
@@ -71,7 +76,6 @@ namespace DotNetDevices.Commands
                     var launched = await simctl.LaunchAppAsync(simulator.Udid, bundleId, new LaunchAppOptions
                     {
                         CaptureOutput = true,
-                        BootSimulator = true,
                         HandleOutput = output =>
                         {
                             parser.ParseTestOutput(
@@ -116,7 +120,7 @@ namespace DotNetDevices.Commands
                 }
                 finally
                 {
-                    await simctl.UninstallAppAsync(simulator.Udid, bundleId, false, cancellationToken);
+                    await simctl.UninstallAppAsync(simulator.Udid, bundleId, cancellationToken);
                 }
             }
             finally

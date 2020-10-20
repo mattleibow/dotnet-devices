@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace DotNetDevices.Android
 {
-    public class AaptTool
+    public class Aapt
     {
         private readonly static Regex xmltreeNamespaceRegex = new Regex(@"^N:\s*(?<ns>[^=]+)=(?<url>.*)$");
         private readonly static Regex xmltreeElementRegex = new Regex(@"^E:\s*((?<ns>[^:]+):)?(?<name>.*) \(line=\d+\)$");
@@ -19,13 +19,13 @@ namespace DotNetDevices.Android
         private readonly ILogger? logger;
         private readonly string aapt;
 
-        public AaptTool(string? sdkRoot = null, ILogger? logger = null)
+        public Aapt(string? sdkRoot = null, ILogger? logger = null)
         {
-            processRunner = new ProcessRunner(logger);
             this.logger = logger;
-
             aapt = AndroidSDK.FindBuildToolPath(sdkRoot, "aapt", logger)
                 ?? throw new ArgumentException($"Unable to locate aapt. Make sure that ANDROID_HOME or ANDROID_SDK_ROOT is set.");
+
+            processRunner = new ProcessRunner(logger);
         }
 
         public async Task<AndroidManifest> GetAndroidManifestAsync(string apk, CancellationToken cancellationToken = default)

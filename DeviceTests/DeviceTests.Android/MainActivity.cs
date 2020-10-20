@@ -1,9 +1,8 @@
-﻿using System.IO;
-using System.Reflection;
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Android.Runtime;
+using System.IO;
+using System.Reflection;
 using Xunit.Runners.UI;
 using Environment = System.Environment;
 

@@ -11,7 +11,8 @@ namespace DotNetDevices.Android
 {
     public class AVDManager
     {
-        private static Regex virtualDevicePathRegex = new Regex(@"\s*Path\:\s*(.+)");
+        private static readonly Regex virtualDevicePathRegex = new Regex(@"\s*Path\:\s*(.+)");
+        private static readonly string[] userDataFiles = { "userdata-qemu.img", "userdata-qemu.img.qcow2" };
 
         private readonly ProcessRunner processRunner;
         private readonly ILogger? logger;
@@ -58,7 +59,21 @@ namespace DotNetDevices.Android
             return targets;
         }
 
-        public async Task<IEnumerable<string>> GetVirtualDeviceNamesAsync(CancellationToken cancellationToken = default)
+        public async Task ResetVirtualDeviceAsync(string id, CancellationToken cancellationToken)
+        {
+            logger?.LogInformation($"Resetting virtual device '{id}'...");
+
+            var avdPath = await GetVirtualDevicePathAsync(id, cancellationToken).ConfigureAwait(false);
+
+            foreach (var file in userDataFiles)
+            {
+                var f = Path.Combine(avdPath, file);
+                if (File.Exists(f))
+                    File.Delete(f);
+            }
+        }
+
+        public async Task<IEnumerable<string>> GetVirtualDeviceIdsAsync(CancellationToken cancellationToken = default)
         {
             logger?.LogInformation("Retrieving all the virtual devices...");
 
@@ -77,13 +92,35 @@ namespace DotNetDevices.Android
                     if (Directory.Exists(path))
                     {
                         var avd = Path.GetFileNameWithoutExtension(path);
-
                         avds.Add(avd);
                     }
                 }
             }
 
             return avds;
+        }
+
+        public async Task<string> GetVirtualDevicePathAsync(string id, CancellationToken cancellationToken = default)
+        {
+            logger?.LogInformation("Retrieving all the virtual devices...");
+
+            var args = $"list avd";
+
+            var result = await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
+
+            foreach (var output in GetListResults(result))
+            {
+                var pathMatch = virtualDevicePathRegex.Match(output);
+                if (pathMatch.Success)
+                {
+                    var path = pathMatch.Groups[1].Value;
+                    var avdId = Path.GetFileNameWithoutExtension(path);
+                    if (avdId.Equals(id, StringComparison.OrdinalIgnoreCase) && Directory.Exists(path))
+                        return path;
+                }
+            }
+
+            throw new Exception($"Virtual device '{id}' does not exist.");
         }
 
         public async Task<IEnumerable<VirtualDevice>> GetVirtualDevicesAsync(CancellationToken cancellationToken = default)
@@ -105,7 +142,7 @@ namespace DotNetDevices.Android
                     var configIniPath = Path.Combine(path, "config.ini");
                     if (Directory.Exists(path) && File.Exists(configIniPath))
                     {
-                        var config = new VirtualDeviceConfig(configIniPath, logger);
+                        var config = new VirtualDeviceConfig(path, logger);
                         var avd = await config.CreateVirtualDeviceAsync(cancellationToken).ConfigureAwait(false);
 
                         avds.Add(avd);
@@ -116,11 +153,11 @@ namespace DotNetDevices.Android
             return avds;
         }
 
-        public async Task DeleteVirtualDeviceAsync(string name, CancellationToken cancellationToken = default)
+        public async Task DeleteVirtualDeviceAsync(string id, CancellationToken cancellationToken = default)
         {
-            logger?.LogInformation($"Deleting virtual device '{name}'...");
+            logger?.LogInformation($"Deleting virtual device '{id}'...");
 
-            var args = $"delete avd --name \"{name}\"";
+            var args = $"delete avd --name \"{id}\"";
 
             try
             {
@@ -133,7 +170,7 @@ namespace DotNetDevices.Android
 
             bool WasExisting(ProcessResult result)
             {
-                var expected = $"Error: There is no Android Virtual Device named '{name}'.";
+                var expected = $"Error: There is no Android Virtual Device with ID '{id}'.";
 
                 foreach (var output in result.GetErrorOutput())
                 {
@@ -145,11 +182,11 @@ namespace DotNetDevices.Android
             }
         }
 
-        public async Task CreateVirtualDeviceAsync(string name, string package, CreateVirtualDeviceOptions? options = null, CancellationToken cancellationToken = default)
+        public async Task CreateVirtualDeviceAsync(string id, string package, CreateVirtualDeviceOptions? options = null, CancellationToken cancellationToken = default)
         {
-            logger?.LogInformation($"Creating virtual device '{name}'...");
+            logger?.LogInformation($"Creating virtual device '{id}'...");
 
-            var args = $"create avd --name \"{name}\" --package \"{package}\"";
+            var args = $"create avd --name \"{id}\" --package \"{package}\"";
             if (options?.Overwrite == true)
                 args += " --force";
 
@@ -164,7 +201,7 @@ namespace DotNetDevices.Android
 
             bool WasExisting(ProcessResult result)
             {
-                var expected = $"Error: Android Virtual Device '{name}' already exists.";
+                var expected = $"Error: Android Virtual Device '{id}' already exists.";
 
                 foreach (var output in result.GetErrorOutput())
                 {
@@ -176,20 +213,20 @@ namespace DotNetDevices.Android
             }
         }
 
-        public async Task RenameVirtualDeviceAsync(string name, string newName, CancellationToken cancellationToken = default)
+        public async Task RenameVirtualDeviceAsync(string id, string newId, CancellationToken cancellationToken = default)
         {
-            logger?.LogInformation($"Renaming virtual device '{name}'...");
+            logger?.LogInformation($"Renaming virtual device '{id}'...");
 
-            var args = $"move avd --name \"{name}\" --rename \"{newName}\"";
+            var args = $"move avd --name \"{id}\" --rename \"{newId}\"";
 
             await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task MoveVirtualDeviceAsync(string name, string newPath, CancellationToken cancellationToken = default)
+        public async Task MoveVirtualDeviceAsync(string id, string newPath, CancellationToken cancellationToken = default)
         {
-            logger?.LogInformation($"Moving virtual device '{name}'...");
+            logger?.LogInformation($"Moving virtual device '{id}'...");
 
-            var args = $"move avd --name \"{name}\" --path \"{newPath}\"";
+            var args = $"move avd --name \"{id}\" --path \"{newPath}\"";
 
             await processRunner.RunAsync(avdmanager, args, null, cancellationToken).ConfigureAwait(false);
         }

@@ -133,7 +133,7 @@ namespace DotNetDevices.Commands
 
             if (!replace)
             {
-                var devices = await avdmanager.GetVirtualDeviceNamesAsync(cancellationToken);
+                var devices = await avdmanager.GetVirtualDeviceIdsAsync(cancellationToken);
                 if (devices.Any(d => d.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 {
                     logger.LogInformation($"Virtual device already exists.");
@@ -160,7 +160,7 @@ namespace DotNetDevices.Commands
 
             var avdmanager = new AVDManager(sdk, logger);
 
-            var devices = await avdmanager.GetVirtualDeviceNamesAsync(cancellationToken);
+            var devices = await avdmanager.GetVirtualDeviceIdsAsync(cancellationToken);
             if (devices.All(d => !d.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
                 logger.LogInformation($"Virtual device does not exist.");
